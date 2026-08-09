@@ -1,0 +1,29 @@
+Space Trainer
+=============
+Author: xdigr (https://t.me/xdigr)
+Menu key: F5
+
+Build
+-----
+Need VS 2022 with C++ tools.
+
+  build.bat
+
+ASI ends up here:
+  Solution\source\_Build\bin\Release\Space.asi
+
+Or run generate.bat and open Solution\Space.sln (Release | x64).
+
+Install
+-------
+1. ScriptHookV + ASI Loader
+2. Disable BattlEye
+3. Drop Space.asi + SpaceStuff into the GTA V folder
+4. F5 in game
+
+Config is SpaceStuff\spaceConfig.ini
+
+License: GPL v3 (COPYING.txt / LICENSE.txt)
+
+Clone with submodules:
+  git clone --recursive <repo-url>

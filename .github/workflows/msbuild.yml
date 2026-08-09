@@ -1,0 +1,31 @@
+name: build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: premake
+        run: Solution/external/premake/premake5.exe vs2022
+
+      - uses: microsoft/setup-msbuild@v2
+
+      - name: msbuild
+        run: msbuild /m /p:Configuration=Release /p:Platform=x64 Solution/Space.sln -verbosity:minimal
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SpaceTrainer
+          path: |
+            Solution/source/_Build/bin/Release/Space.asi
+            Solution/source/_Build/bin/Release/SpaceStuff/
+            !**/*.map

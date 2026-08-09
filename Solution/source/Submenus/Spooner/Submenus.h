@@ -1,0 +1,80 @@
+#pragma once
+
+#include <tuple>
+#include <string>
+
+#include "..\..\Util\GTAmath.h"
+
+typedef unsigned char UINT8, BYTE;
+typedef unsigned int UINT;
+typedef unsigned long DWORD, Hash;
+
+class GTAentity;
+
+namespace sub
+{
+	namespace Spooner::Submenus
+	{
+		extern std::string& _searchStr;
+		extern std::tuple<GTAentity, Vector3*, Vector3*> SpoonerVector3ManualPlacementPtrs;
+		extern float _manualPlacementPrecision;
+		extern UINT8 _copyEntTexterValue;
+		struct EntityScaleState {
+			int handle = 0;
+			Vector3 scale{ 1.0f, 1.0f, 1.0f };
+		};
+		extern EntityScaleState _vehScale, _pedScale, _objScale;
+		
+		void HandleKeyboardPlacementInput(Vector3& position, Vector3& rotation);
+
+		void SetEnt241();
+		void SetEnt12();
+
+		void Sub_SpoonerMain();
+		void Sub_Settings();
+		void Sub_SaveFiles();
+		void Sub_SaveFiles_Load();
+		void Sub_SaveFiles_Load_LegacySP00N();
+		void Sub_ManageEntities();
+		void Sub_ManageEntities_Removal();
+		//void Sub_ManageEntities_Removal_FromDb();
+		void Sub_SelectedEntityOps();
+		void Sub_AttachmentOps();
+		void Sub_AttachmentOps_AttachTo();
+		void Sub_AttachmentOps_SelectBone();
+		void Sub_ManualPlacement();
+		void Sub_SizeManipulation();
+		void Sub_QuickManualPlacement();
+		void Sub_Vector3_ManualPlacement();
+		void Sub_GroupSpoon();
+		void Sub_GroupSpoon_SelectEntities();
+		void Sub_GroupSpoon_AttachTo();
+
+		void Sub_PedOps();
+		void Sub_PedOps_Weapon();
+		void Sub_PedOps_Weapon_InCategory();
+
+		void Sub_ManageMarkers();
+		void Sub_ManageMarkers_Removal();
+		void Sub_ManageMarkers_InMarker();
+		void Sub_ManageMarkers_InMarker_Dest2Marker();
+		void Sub_ManageMarkers_InMarker_Attach();
+
+		void Sub_SpawnCategories();
+		void Sub_SpawnProp();
+		void Sub_SpawnProp_Favourites();
+		void Sub_SpawnPed();
+		void Sub_SpawnVehicle();
+	}
+
+
+	void EntityAlphaLevelSub_();
+
+	void PedExplosionSub();
+
+	void AttachFunnyObjectSub();
+
+}
+
+
+

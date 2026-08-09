@@ -1,0 +1,48 @@
+#pragma once
+
+#include <string>
+#include <unordered_set>
+#include <vector>
+
+typedef int ScrHandle, Entity, Ped, Vehicle;
+typedef unsigned long DWORD, Hash;
+
+namespace pugi {
+	class xml_node;
+}
+
+namespace sub::Spooner
+{
+	class SpoonerEntity;
+	class SpoonerEntityWithInitHandle;
+	class SpoonerMarker;
+	class SpoonerMarkerWithInitHandle;
+
+	namespace FileManagement
+	{
+		extern std::string _oldAudioAlias;
+
+		//bool Exists(const std::string& fileName, std::string extension = ".xml");
+		//bool Rename(const std::string& oldName, const std::string& newName, std::string extension = ".xml");
+		//bool Delete(const std::string& fileName, std::string extension = ".xml");
+
+		void AddEntityToXmlNode(SpoonerEntity& e, pugi::xml_node& nodeEntity);
+		SpoonerEntityWithInitHandle SpawnEntityFromXmlNode(pugi::xml_node& nodeEntity, std::unordered_set<Hash>& vModelHashes);
+
+		void AddMarkerToXmlNode(SpoonerMarker& m, pugi::xml_node& nodeMarker);
+		SpoonerMarkerWithInitHandle SpawnMarkerFromXmlNode(pugi::xml_node& nodeMarker);
+
+		bool SaveDbToFile(const std::string& filePath, bool bForceReferenceCoords);
+		bool SaveWorldToFile(const std::string& filePath, std::vector<Entity>& vEntityHandles, std::vector<SpoonerMarker>& v
+		);
+		bool LoadPlacementsFromFile(const std::string& filePath);
+
+		bool LoadPlacementsFromSP00NFile(const std::string& filePath);
+
+		bool TeleportToReference(const std::string& filePath);
+	}
+
+}
+
+
+

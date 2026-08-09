@@ -1,0 +1,148 @@
+/*
+* Copyright (C) 2015 crosire
+*
+* This software is  provided 'as-is', without any express  or implied  warranty. In no event will the
+* authors be held liable for any damages arising from the use of this software.
+* Permission  is granted  to anyone  to use  this software  for  any  purpose,  including  commercial
+* applications, and to alter it and redistribute it freely, subject to the following restrictions:
+*
+*   1. The origin of this software must not be misrepresented; you must not claim that you  wrote the
+*      original  software. If you use this  software  in a product, an  acknowledgment in the product
+*      documentation would be appreciated but is not required.
+*   2. Altered source versions must  be plainly  marked as such, and  must not be  misrepresented  as
+*      being the original software.
+*   3. This notice may not be removed or altered from any source distribution.
+*/
+#pragma once
+
+#include <vector>
+#include <string>
+
+class Vector3;
+class Vector2;
+class GTAentity;
+class GTAped;
+
+enum class CameraShake : int
+{
+	Hand = 0,
+	SmallExplosion,
+	MediumExplosion,
+	LargeExplosion,
+	Jolt,
+	Vibrate,
+	RoadVibration,
+	Drunk,
+	SkyDiving,
+	FamilyDrugTrip,
+	DeathFail
+};
+
+extern const std::vector<std::string> cameraShakeNames;
+
+class Camera
+{
+public:
+	Camera();
+	Camera(int handle);
+
+	friend bool operator == (const Camera& left, const Camera& right);
+	friend bool operator != (const Camera& left, const Camera& right);
+	Camera& operator = (const Camera& right);
+
+	int& Handle();
+	int GetHandle() const;
+
+	void SetDepthOfFieldStrength(float value);
+
+	float GetFieldOfView() const noexcept;
+	void SetFieldOfView(float value);
+
+	float GetFarClip() const noexcept;
+	void SetFarClip(float value);
+	float GetFarDepthOfField() const noexcept;
+	void SetFarDepthOfField(float value);
+
+	float GetNearClip() const noexcept;
+	void SetNearClip(float value);
+	void SetNearDepthOfField(float value);
+
+	bool IsActive() const;
+	void SetActive(bool value);
+
+	bool IsInterpolating() const;
+
+	bool IsShaking() const;
+
+	void SetShake(bool status);
+
+	void SetMotionBlurStrength(float value);
+
+	Vector3 GetPosition() const;
+	void SetPosition(Vector3 coord);
+	void SetPosition(float X, float Y, float Z);
+
+	Vector3 GetRotation(__int8 unk = 2) const;
+	void SetRotation(const Vector3& rot, __int8 unk = 2);
+	void SetRotation(float X, float Y, float Z, __int8 unk = 2);
+
+
+	Vector3 GetDirection(__int8 unk = 2) const;
+	void SetDirection(Vector3 dir, __int8 unk = 2);
+	void SetDirection(float X, float Y, float Z, __int8 unk = 2);
+	
+	float GetHeading() const;
+	void SetHeading(float value);
+
+
+	Vector3 GetOffsetInWorldCoords(const Vector3& offset) const;
+	Vector3 GetOffsetInWorldCoords(float X, float Y, float Z) const;
+	Vector3 GetOffsetGivenWorldCoords(const Vector3& worldCoords) const;
+	Vector3 GetOffsetGivenWorldCoords(float X, float Y, float Z) const;
+
+	float GetShakeAmplitude() const;
+	void SetShakeAmplitude(float value);
+
+	CameraShake GetShakeType() const;
+	void SetShakeType(CameraShake value);
+
+	void AttachTo(GTAentity entity, Vector3 offset);
+	void AttachTo(GTAped ped, int boneIndex, Vector3 offset);
+	void Detach();
+
+	void InterpTo(Camera to, int duration, bool easePosition, bool easeRotation);
+
+	void PointAt(Vector3 target);
+	void PointAt(GTAentity target);
+	void PointAt(GTAentity target, Vector3 offset);
+	void PointAt(GTAped target, int boneIndex);
+	void PointAt(GTAped target, int boneIndex, Vector3 offset);
+	void StopPointing();
+
+	bool Exists() const;
+
+	void Destroy();
+	static void DestroyAllCameras();
+	static void RenderScriptCams(bool render);
+
+
+	Vector3 ScreenToWorld(const Vector2& screenCoord) const;
+
+	GTAentity RaycastForEntity(const Vector2& screenCoord, GTAentity ignoreEntity, float maxDistance = 100.0f) const;
+
+	Vector3 RaycastForCoord(const Vector2& screenCoord, GTAentity ignoreEntity, float maxDistance = 100.0f, float failDistance = 100.0f) const;
+
+	Vector3 GetDirectionFromScreenCentre() const;
+
+
+private:
+	int mHandle;
+	float mShakeAmplitude;
+	CameraShake mShakeType;
+
+	static bool WorldToScreenRel(const Vector3& worldCoords, Vector2& screenCoords);
+};
+
+
+Vector3 GetCoordsFromCamera(int camid, float distance);
+

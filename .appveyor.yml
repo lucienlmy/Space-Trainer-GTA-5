@@ -1,0 +1,17 @@
+image: Visual Studio 2022
+install:
+  - cd %APPVEYOR_BUILD_FOLDER%
+  - git submodule --quiet update --init --recursive
+  - Solution\external\premake\premake5.exe vs2022
+platform:
+  - x64
+configuration:
+  - Release
+build:
+  project: Solution\Space.sln
+  verbosity: minimal
+after_build:
+  - 7z -tzip a SpaceTrainer.zip %APPVEYOR_BUILD_FOLDER%\Solution\source\_Build\bin\Release\* -xr!*.map -xr!Trash
+artifacts:
+  - path: SpaceTrainer.zip
+    name: Space Trainer build
