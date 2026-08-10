@@ -49,8 +49,6 @@ namespace sub
 		AddOption("Map Mods (Old)", null, nullFunc, SUB::MAPMODS);
 		AddOption("HUD Options", null, nullFunc, SUB::HUDOPTIONS);
 		AddOption("Game Camera Options", null, nullFunc, SUB::GAMECAMOPTIONS);
-		AddOption("Space Extras", null, nullFunc, SUB::SPACEEXTRAS);
-		AddOption("Creators", null, nullFunc, SUB::SPOONER_MAIN);
 	}
 
 	void NpcHub()
@@ -75,8 +73,22 @@ namespace sub
 	{
 		AddTitle("Functions");
 
-		bool freecamOff = false;
-		AddToggle("FreeCam (No-Clip)", noClip, null, freecamOff);
+		bool freecamOn = false, freecamOff = false;
+		AddToggle("FreeCam (No-Clip)", noClip, freecamOn, freecamOff);
+		if (freecamOn)
+		{
+			noClipToggle = true;
+			Game::Print::PrintBottomCentre("FreeCam ON. Move with WASD, look with mouse. F3 toggles.");
+		}
+		if (freecamOff)
+		{
+			if (noClipToggle)
+			{
+				SetNoclipOff1();
+				SetNoclipOff2();
+			}
+			noClipToggle = false;
+		}
 		AddToggle("Super Run", superRun);
 		AddToggle("Super Jump", superJump);
 		AddToggle("God Mode", playerInvincibility);
@@ -89,12 +101,18 @@ namespace sub
 		AddToggle("Rapid Fire", rapidFire);
 		AddToggle("Drive On Water", driveOnWater);
 
+		AddBreak("---Chaos Modes---");
+		AddOption("Chaos Modes", null, nullFunc, SUB::CHAOSMODES);
+		AddOption("Contract Hits", null, nullFunc, SUB::HITMAN_CONTRACTS);
+
+		AddBreak("---Pro Pack---");
+		AddOption("Space Pro Pack", null, nullFunc, SUB::SPACE_PROPACK);
+		AddOption("Quick Search (~)", null, nullFunc, SUB::SPACE_QUICKSEARCH);
+
 		AddBreak("---Modules---");
 		AddOption("Misc Options", null, nullFunc, SUB::MISCOPS);
 		AddOption("Space Extras", null, nullFunc, SUB::SPACEEXTRAS);
 		AddOption("Hero Abilities", null, nullFunc, SUB::HEROABILITIES);
-		AddOption("Custom Skins & Heroes", null, nullFunc, SUB::CUSTOMSKINS);
-		AddOption("Creators / Spooner", null, nullFunc, SUB::SPOONER_MAIN);
 		AddOption("Cutscene Player", null, nullFunc, SUB::CUTSCENEPLAYER);
 		AddOption("TV Player", null, nullFunc, SUB::TVCHANNELSTUFF_TV);
 		AddOption("Radio", null, nullFunc, SUB::RADIOSUB);

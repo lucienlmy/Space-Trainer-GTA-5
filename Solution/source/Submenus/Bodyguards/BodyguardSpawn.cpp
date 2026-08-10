@@ -3,31 +3,22 @@
 #include "../../Natives/natives.h"
 
 #include "BodyguardSpawn.h"
-//#include "BodyguardFunction.h"
 #include "BodyguardManagement.h"
 
 #include "../../Menu/Menu.h"
 #include "../../Scripting/Game.h"
 #include "../../Scripting/GTAped.h"
+#include "../../Scripting/GTAentity.h"
 #include "../../Scripting/Model.h"
 #include "../../macros.h"
 #include <vector>
-#include <tuple>
 #include <string>
 
-#include "../../Submenus/Spooner/SpoonerMode.h"
-#include "../../Scripting/ModelNames.h"
 #include "../../Menu/Routine.h"
-#include "../../Submenus/Spooner/MenuOptions.h"
-#include "../../Submenus/Spooner/Submenus.h"
-#include "../../Submenus/PedModelChanger.h"
 #include "../../Util/StringManip.h"
-#include "../../Submenus/Spooner/EntityManagement.h"
 #include "BodyguardMenu.h"
 #include "../../Scripting/enums.h"
-
 #include "../../Scripting/World.h"
-#include "../../Scripting/enums.h"
 
 namespace sub::BodyguardMenu
 {
@@ -96,7 +87,8 @@ namespace sub::BodyguardMenu::BodyguardManagement
 			return;
 		}
 
-		if (!model.IsInCdImage() || !model.IsPed())
+		GTAmodel::Model mdl = model;
+		if (!mdl.IsInCdImage() || !mdl.IsPed())
 		{
 			Game::Print::PrintBottomLeft("~r~Invalid ped model.");
 			return;
@@ -106,16 +98,23 @@ namespace sub::BodyguardMenu::BodyguardManagement
 		if (!player.Exists())
 			return;
 
-		Vector3 pos = player.GetOffsetInWorldCoords(Vector3(1.5f, 0.8f, 0.0f));
-		float heading = player.GetHeading();
+		if (!mdl.Load(8000))
+		{
+			Game::Print::PrintBottomLeft("~r~Failed to load bodyguard model.");
+			return;
+		}
 
-		GTAped gtaPed = World::CreatePed(model, pos, heading, true);
-		Ped ped = gtaPed.Handle();
+		Vector3 pos = player.GetOffsetInWorldCoords(1.2f, 1.0f, 0.0f);
+		float groundZ = pos.z;
+		GET_GROUND_Z_FOR_3D_COORD(pos.x, pos.y, pos.z + 30.0f, &groundZ, FALSE, FALSE);
+		pos.z = groundZ + 1.0f;
+		const float heading = player.GetHeading();
 
+		Ped ped = CREATE_PED(26, mdl.hash, pos.x, pos.y, pos.z, heading, FALSE, FALSE);
 		if (!DOES_ENTITY_EXIST(ped) || ped == 0)
 		{
 			Game::Print::PrintBottomLeft("~r~Bodyguard spawn failed.");
-			model.Unload();
+			mdl.Unload();
 			return;
 		}
 
@@ -124,6 +123,8 @@ namespace sub::BodyguardMenu::BodyguardManagement
 		SET_PED_RANDOM_COMPONENT_VARIATION(ped, 0);
 		SET_ENTITY_VISIBLE(ped, true, false);
 		FREEZE_ENTITY_POSITION(ped, false);
+		SET_ENTITY_COLLISION(ped, true, true);
+		GTAentity(ped).PlaceOnGround();
 
 		SET_ENTITY_MAX_HEALTH(ped, sub::BodyguardMenu::health);
 		SET_ENTITY_HEALTH(ped, sub::BodyguardMenu::health, 0);
@@ -134,6 +135,7 @@ namespace sub::BodyguardMenu::BodyguardManagement
 			SetPedInvincibleOff(ped);
 
 		int group = GET_PLAYER_GROUP(PLAYER_ID());
+		SET_PED_AS_GROUP_LEADER(player.Handle(), group);
 		SET_PED_AS_GROUP_MEMBER(ped, group);
 		SET_PED_NEVER_LEAVES_GROUP(ped, true);
 		SET_PED_CAN_BE_TARGETTED(ped, false);
@@ -159,29 +161,41 @@ namespace sub::BodyguardMenu::BodyguardManagement
 		SET_PED_CAN_BE_KNOCKED_OFF_VEHICLE(ped, 1);
 		SET_PED_CONFIG_FLAG(ped, 32, false);
 		SET_PED_CONFIG_FLAG(ped, 184, true);
+		SET_PED_CAN_RAGDOLL(ped, false);
 
 		GIVE_WEAPON_TO_PED(ped, WEAPON_COMBATPISTOL, 250, false, true);
 		GIVE_WEAPON_TO_PED(ped, WEAPON_CARBINERIFLE, 250, false, false);
 		GIVE_WEAPON_TO_PED(ped, WEAPON_PUMPSHOTGUN, 60, false, false);
 		SET_CURRENT_PED_WEAPON(ped, WEAPON_COMBATPISTOL, true);
 
-		SET_PED_AS_GROUP_LEADER(player.Handle(), group);
+		SET_GROUP_SEPARATION_RANGE(group, 9999.0f);
 		SET_GROUP_FORMATION_SPACING(group, 1.5f, 2.5f, 3.5f);
 		SET_PED_CAN_TELEPORT_TO_GROUP_LEADER(ped, group, true);
+		TASK_FOLLOW_TO_OFFSET_OF_ENTITY(ped, player.Handle(), 0.8f, -1.2f, 0.0f, 2.0f, -1, 1.5f, true);
 
 		BodyguardEntity ent{};
 		ent.Handle = GTAentity(ped);
 		ent.Type = EntityType::PED;
 		ent.Name = text;
-		ent.HashName = IntToHexString(model.hash, true);
+		ent.HashName = IntToHexString(mdl.hash, true);
 
-		sub::BodyguardMenu::BodyguardManagement::AddBodyguardToDb(ent);
+		if (!DOES_ENTITY_EXIST(ped))
+		{
+			Game::Print::PrintBottomLeft("~r~Bodyguard vanished after spawn.");
+			mdl.Unload();
+			return;
+		}
+
+		BodyguardDb.push_back(std::move(ent));
 		ApplyBodyguardBlip(ped, sub::BodyguardMenu::blipIcon);
-
 		s_bodyguards.push_back(ped);
 
-		Game::Print::PrintBottomLeft("~g~Bodyguard spawned");
-		model.Unload();
+		char msg[96];
+		sprintf_s(msg, "~g~Bodyguard spawned (%u/7)", (unsigned)BodyguardDb.size());
+		Game::Print::PrintBottomLeft(msg);
+
+		// Keep model referenced lightly; safe release for streaming.
+		SET_MODEL_AS_NO_LONGER_NEEDED(mdl.hash);
 	}
 
 	void AddOptionBodyGuardPed(const std::string& text, const GTAmodel::Model& model)
@@ -193,5 +207,3 @@ namespace sub::BodyguardMenu::BodyguardManagement
 	}
 
 }
-
-

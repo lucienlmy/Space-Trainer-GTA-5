@@ -85,7 +85,7 @@ namespace SpaceTheme
 
 		Layout& L = s_layout;
 		L.scale = uiScale;
-		L.panelWidth = 0.210f * uiScale;
+		L.panelWidth = 0.235f * uiScale;
 
 		// Left-anchored panel. Clamp so a bad menuPosX (from old configs / position slider)
 		// cannot push the menu off the right edge of the screen.

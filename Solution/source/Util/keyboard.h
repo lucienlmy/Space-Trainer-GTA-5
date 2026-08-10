@@ -227,6 +227,9 @@ bool IsKeyDown(DWORD key);
 
 bool IsKeyJustUp(DWORD key, bool exclusive = true);
 
+// Returns first virtual-key that was just released (1..254), or 0.
+int GetAnyKeyJustUp(bool exclusive = true);
+
 void ResetKeyState(DWORD key);
 
 // Game

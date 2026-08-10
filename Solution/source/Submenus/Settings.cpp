@@ -1,9 +1,18 @@
 #include "MainMenu.h"
 #include "Settings.h"
 #include "..\Menu\SpaceTheme.h"
+#include "..\Menu\Menu.h"
+#include "..\Menu\MenuConfig.h"
+#include "..\Menu\Language.h"
+#include "..\Scripting\Game.h"
+#include "..\Util\keyboard.h"
+
+#include <string>
 
 namespace sub
 {
+	static bool s_waitingOpenKey = false;
+
 	void Settings()
 	{
 		auto& bSyncWithConfig = MenuConfig::bSaveAtIntervals;
@@ -15,6 +24,36 @@ namespace sub
 		if (bChangeLangPressed)
 		{
 			Menu::SetSub_delayed = SUB::SETTINGS_LANGUAGE;
+		}
+
+		std::string openLabel = "Open Menu Key: " + VkCodeToStr((UINT8)menubinds);
+		if (s_waitingOpenKey)
+			openLabel = "Press ANY key... (ESC cancel)";
+		bool setKey = false;
+		AddOption(openLabel, setKey);
+		if (setKey && !s_waitingOpenKey)
+		{
+			s_waitingOpenKey = true;
+			Game::Print::PrintBottomCentre("Press the key you want to open the menu.");
+		}
+		if (s_waitingOpenKey)
+		{
+			if (IsKeyJustUp(VirtualKey::Escape, true))
+			{
+				s_waitingOpenKey = false;
+				Game::Print::PrintBottomCentre("~r~Key bind cancelled.");
+			}
+			else
+			{
+				const int k = GetAnyKeyJustUp(true);
+				if (k > 0 && k != VirtualKey::Escape)
+				{
+					menubinds = (UINT16)k;
+					s_waitingOpenKey = false;
+					MenuConfig::SaveConfig();
+					Game::Print::PrintBottomCentre("~g~Open key set to ~w~" + VkCodeToStr((UINT8)menubinds));
+				}
+			}
 		}
 
 		AddOption("Themes", null, nullFunc, SUB::SETTINGS_THEMES);

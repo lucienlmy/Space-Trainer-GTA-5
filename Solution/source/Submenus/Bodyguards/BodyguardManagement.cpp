@@ -6,6 +6,7 @@
 #include "../../Scripting/GTAentity.h"
 #include "../../Scripting/GTAblip.h"
 #include "../../Natives/natives.h"
+#include "../../Natives/natives2.h"
 
 #include <algorithm>
 #include "../../Util/StringManip.h"
@@ -65,7 +66,8 @@ namespace sub::BodyguardMenu
 
 		void AddBodyguardToDb(BodyguardEntity ent)
 		{
-			if (!ent.Handle.Exists())
+			const int h = ent.Handle.GetHandle();
+			if (h == 0 || !DOES_ENTITY_EXIST(h))
 				return;
 
 			if (ent.HashName.empty())

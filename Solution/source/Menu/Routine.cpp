@@ -38,6 +38,7 @@
 #include "..\Misc\GraphicsQuality.h"
 #include "..\Misc\Gta2Cam.h"
 #include "..\Misc\HeroAbilities.h"
+#include "..\Misc\ChaosModes.h"
 #include "..\Misc\JumpAroundMode.h"
 #include "..\Misc\MagnetGun.h"
 #include "..\Misc\ManualRespawn.h"
@@ -45,6 +46,8 @@
 #include "..\Misc\RopeGun.h"
 #include "..\Misc\SmashAbility.h"
 #include "..\Misc\SpaceExtras.h"
+#include "..\Misc\SpaceProPack.h"
+#include "..\Misc\HitmanContracts.h"
 #include "..\Misc\VehicleCruise.h"
 #include "..\Misc\VehicleFly.h"
 #include "..\Misc\VehicleTow.h"
@@ -915,49 +918,10 @@ int GetRandomSpriteId()
 // Misc
 void SetBlackoutEMPMode()
 {
+	// Lights-only blackout. The old version forced nearby drivers out of cars
+	// every frame via task sequences and caused crashes / freezes.
 	SET_ARTIFICIAL_LIGHTS_STATE(TRUE);
-
-	for (auto& vehicle : nearbyVehicles)
-	{
-		if (vehicle == g_myVeh) continue;
-
-		NETWORK_REQUEST_CONTROL_OF_ENTITY(vehicle);
-		SET_VEHICLE_ENGINE_ON(vehicle, 0, 1, 0);
-	}
-
-	ScrHandle tempSeq;
-	OPEN_SEQUENCE_TASK(&tempSeq);
-	TASK_LEAVE_ANY_VEHICLE(0, 0, 0);
-	TASK_CLEAR_LOOK_AT(0);
-	TASK_SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(0, 0);
-	TASK_STAND_STILL(0, 300);
-	TASK_START_SCENARIO_IN_PLACE(0, "WORLD_HUMAN_STAND_IMPATIENT", 800, 1);
-	TASK_USE_MOBILE_PHONE_TIMED(0, 6000);
-	TASK_WANDER_STANDARD(0, 0x471c4000, 0);
-	CLOSE_SEQUENCE_TASK(tempSeq);
-
-	for (auto& ped : nearbyPeds)
-	{
-		if (GET_SEQUENCE_PROGRESS(ped) < 0)
-		{
-			if (!IS_PED_IN_ANY_VEHICLE(ped, 0))
-			{
-				continue;
-			}
-			if (GET_ENTITY_SPEED(GET_VEHICLE_PED_IS_IN(ped, 0)) > 0.6f)
-			{
-				continue;
-			}
-
-			NETWORK_REQUEST_CONTROL_OF_ENTITY(ped);
-			TASK_PERFORM_SEQUENCE(ped, tempSeq);
-			SET_PED_KEEP_TASK(ped, 1);
-			SET_PED_FLEE_ATTRIBUTES(ped, 0, 1);
-			SET_PED_FLEE_ATTRIBUTES(ped, 1024, 1);
-			SET_PED_FLEE_ATTRIBUTES(ped, 131072, 1);
-		}
-	}
-	CLEAR_SEQUENCE_TASK(&tempSeq);
+	SET_ARTIFICIAL_VEHICLE_LIGHTS_STATE(FALSE);
 }
 void SetBlackoutMode()
 {
@@ -1842,6 +1806,21 @@ void SetNoclip()
 	{
 		return;
 	}
+
+	// Menu FreeCam toggle is master; keep flight on when feature is first enabled.
+	static bool s_prevNoClip = false;
+	if (noClip && !s_prevNoClip)
+		noClipToggle = true;
+	if (!noClip && s_prevNoClip)
+	{
+		if (noClipToggle)
+		{
+			SetNoclipOff1();
+			SetNoclipOff2();
+		}
+		noClipToggle = false;
+	}
+	s_prevNoClip = noClip;
 
 	auto& cam = g_cam_noClip;
 	GTAentity myPed = PLAYER_PED_ID();
@@ -3349,6 +3328,9 @@ static void TickSubsystems()
 	MeteorShower::g_meteorShower.Tick();
 	SmashAbility::g_smashAbility.Tick();
 	SpaceExtras::Tick();
+	ChaosModes::Tick();
+	SpaceProPack::Tick();
+	HitmanContracts::Tick();
 	HeroAbilities::Tick();
 	GraphicsQuality::Tick();
 	RopeGun::g_ropeGun.Tick();

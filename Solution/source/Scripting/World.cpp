@@ -410,18 +410,33 @@ namespace World
 
 	GTAped CreatePed(GTAmodel::Model model, Vector3 position, float heading, bool placeOnGround)
 	{
-		if (!model.IsInCdImage()) return 0;
+		if (!model.IsInCdImage() || !model.IsPed())
+			return 0;
+
+		if (!model.Load(5000))
+			return 0;
 
 		if (placeOnGround)
 		{
-			position.z = World::GetGroundHeight(position) + model.Dim1().z;//model.Dim2().z;
+			const float ground = World::GetGroundHeight(Vector3(position.x, position.y, position.z + 50.0f));
+			position.z = ground + 1.0f;
 		}
 
-		model.Load(3000);
+		// SP: non-networked create so peds persist (bodyguards / companions).
+		Ped handle = CREATE_PED(26, model.hash, position.x, position.y, position.z, heading, FALSE, FALSE);
+		if (!DOES_ENTITY_EXIST(handle) || handle == 0)
+		{
+			model.Unload();
+			return 0;
+		}
 
-		GTAentity ped = CREATE_PED(26, model.hash, position.x, position.y, position.z, heading, 1, 1);
-		if (placeOnGround) ped.PlaceOnGround();
-		return ped;
+		SET_ENTITY_AS_MISSION_ENTITY(handle, true, true);
+		SET_PED_DEFAULT_COMPONENT_VARIATION(handle);
+		if (placeOnGround)
+			GTAentity(handle).PlaceOnGround();
+
+		SET_MODEL_AS_NO_LONGER_NEEDED(model.hash);
+		return GTAped(handle);
 	}
 	GTAped CreatePed(GTAmodel::Model model, Vector3 position, const Vector3& rotation, bool placeOnGround)
 	{
@@ -445,7 +460,7 @@ namespace World
 
 		model.Load(3000);
 
-		return CREATE_PED_INSIDE_VEHICLE(vehicle.GetHandle(), PedType::Human, model.hash, static_cast<int>(seat), TRUE, TRUE);
+		return CREATE_PED_INSIDE_VEHICLE(vehicle.GetHandle(), PedType::Human, model.hash, static_cast<int>(seat), FALSE, FALSE);
 	}
 
 	GTAvehicle CreateVehicle(GTAmodel::Model model, Vector3 position, float heading, bool placeOnGround)

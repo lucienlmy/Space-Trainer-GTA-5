@@ -19,9 +19,14 @@ namespace sub::BodyguardMenu
 
 	static void PruneMissingBodyguards()
 	{
+		// Only drop entries whose handle is clearly gone (0 or not in world).
 		BodyguardDb.erase(
 			std::remove_if(BodyguardDb.begin(), BodyguardDb.end(),
-				[](const BodyguardEntity& e) { return !e.Handle.Exists(); }),
+				[](const BodyguardEntity& e)
+				{
+					const int h = e.Handle.GetHandle();
+					return h == 0 || !DOES_ENTITY_EXIST(h);
+				}),
 			BodyguardDb.end());
 	}
 

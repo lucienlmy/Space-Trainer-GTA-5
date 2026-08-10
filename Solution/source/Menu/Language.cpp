@@ -17,7 +17,7 @@ namespace Language
 {
 	std::vector<Lang> allLangs;
 	Lang* selectedLang = nullptr;
-	std::string configLangName = "Russian";
+	std::string configLangName = "English";
 
 	// Must be compiled with /utf-8. Stored as JSON so runtime load + file export share one source.
 	static const char* BuiltinRussianJson()
@@ -40,6 +40,46 @@ namespace Language
   "Time": "Время",
   "NPC": "NPC",
   "Functions": "Функции",
+  "Chaos Modes": "Безумные режимы",
+  "Mad Runs": "Безумные забеги",
+  "Jet Stunt Mode": "Трюки на истребителе",
+  "John Wick Mode": "Режим Джона Уика",
+  "Alien Invasion": "Вторжение инопланетян",
+  "Animal Chaos": "Хаос с животными",
+  "Stop Active Mode": "Остановить режим",
+  "FreeCam (No-Clip)": "Свободная камера",
+  "Super Run": "Супер бег",
+  "Super Jump": "Супер прыжок",
+  "God Mode": "Бессмертие",
+  "No Ragdoll": "Без рэгдолла",
+  "Never Wanted": "Без розыска",
+  "Show Coordinates": "Показать координаты",
+  "Show FPS": "Показать FPS",
+  "Infinite Ammo": "Бесконечные патроны",
+  "Explosive Melee": "Взрывной рукопашный",
+  "Rapid Fire": "Быстрая стрельба",
+  "Drive On Water": "Езда по воде",
+  "Misc Options": "Разное",
+  "Hero Abilities": "Способности героев",
+  "Custom Skins & Heroes": "Скины и герои",
+  "Creators / Spooner": "Создатели / Спунер",
+  "Cutscene Player": "Плеер катсцен",
+  "TV Player": "ТВ-плеер",
+  "Radio": "Радио",
+  "Animal Riding (SP)": "Езда на животных",
+  "Spawn Bodyguard": "Нанять телохранителя",
+  "Bodyguard List": "Список телохранителей",
+  "No bodyguards spawned": "Нет телохранителей",
+  "Hint: use Quick Spawn or Spawn Bodyguard": "Подсказка: быстрый спавн или нанять",
+  "Quick Spawn": "Быстрый спавн",
+  "SWAT": "SWAT",
+  "Merryweather": "Merryweather",
+  "Army": "Армия",
+  "Police": "Полиция",
+  "FIB": "FIB",
+  "Gang Ballas": "Банда Ballas",
+  "Marine": "Морпех",
+  "Clone Player Model": "Клон игрока",
   "Appearance": "Внешний вид",
   "Statistics": "Статистика",
   "SPACE": "SPACE",
@@ -217,6 +257,34 @@ namespace Language
   "Infinite Stamina": "Бесконечная выносливость",
   "Quiet Steps": "Тихие шаги",
   "Force Field (Push NPCs)": "Силовое поле",
+  "Pro Pack": "Pro Pack",
+  "Cleanup, film cams, gangs, traffic.": "Очистка, камеры, банды, трафик.",
+  "Freecam, chaos modes and extras.": "Freecam, хаос и доп. функции.",
+  "Space Pro Pack": "Space Pro Pack",
+  "Quick Search (~)": "Быстрый поиск (~)",
+  "Smart Vehicle Cleanup": "Умная очистка машин",
+  "Film Cameras": "Камеры для съёмки",
+  "Car Tuning (Mod Shop)": "Тюнинг (Mod Shop)",
+  "Custom Gangs": "Кастомные банды",
+  "Realistic Traffic": "Реалистичный трафик",
+  "Safe Mode (mod compatibility)": "Safe Mode (совместимость)",
+  "Max Upgrade Current Car": "Макс. тюнинг текущей машины",
+  "Repair + Clean Current Car": "Ремонт + мойка",
+  "Vehicle Saver Folder": "Сохранённые машины",
+  "Delete empty spawned": "Удалить пустые созданные",
+  "Delete all spawned (keep current)": "Удалить все созданные (оставить текущую)",
+  "Enable Realistic Traffic": "Включить реалистичный трафик",
+  "Orbit Cam": "Орбитальная камера",
+  "Chase Cam": "Камера погони",
+  "Save Nearby Peds As Gang": "Сохранить педов рядом как банду",
+  "Stop Film Camera": "Выключить film-камеру",
+  "Contract Hits": "Заказные убийства",
+  "Gang Assault": "Нападение банд",
+  "Solo Contract": "Одиночное задание",
+  "Mobile Hit": "Выездное убийство",
+  "Boat Hit": "Выезд на лодке",
+  "Sniper Contract": "Снайперский контракт",
+  "Abort Contract": "Отменить контракт",
   "Auto Flip Car": "Автопереворот авто",)json") + std::string(R"json(
   "Clear Wanted": "Сбросить розыск",
   "Max Wanted (5 Stars)": "Розыск 5 звёзд",
@@ -387,7 +455,32 @@ namespace Language
   "Circle (Inward)": "Круг (внутрь)",
   "Circle (North)": "Круг (север)",
   "Line": "Линия",
-  "---Categories---": "---Категории---"
+  "---Categories---": "---Категории---",
+  "Space Pro Pack": "Space Pro Pack",
+  "Quick Search (~)": "Быстрый поиск (~)",
+  "Smart Vehicle Cleanup": "Умная очистка машин",
+  "Film Cameras": "Камеры для съёмки",
+  "Car Tuning (Mod Shop)": "Тюнинг (Mod Shop)",
+  "Custom Gangs": "Кастомные банды",
+  "Realistic Traffic": "Реалистичный трафик",
+  "Safe Mode (mod compatibility)": "Safe Mode (совместимость)",
+  "Max Upgrade Current Car": "Макс. тюнинг текущей машины",
+  "Repair + Clean Current Car": "Ремонт + мойка",
+  "Vehicle Saver Folder": "Сохранённые машины",
+  "Delete empty spawned": "Удалить пустые созданные",
+  "Delete all spawned (keep current)": "Удалить все созданные (оставить текущую)",
+  "Enable Realistic Traffic": "Включить реалистичный трафик",
+  "Orbit Cam": "Орбитальная камера",
+  "Chase Cam": "Камера погони",
+  "Save Nearby Peds As Gang": "Сохранить педов рядом как банду",
+  "Stop Film Camera": "Выключить film-камеру",
+  "Contract Hits": "Заказные убийства",
+  "Gang Assault": "Нападение банд",
+  "Solo Contract": "Одиночное задание",
+  "Mobile Hit": "Выездное убийство",
+  "Boat Hit": "Выезд на лодке",
+  "Sniper Contract": "Снайперский контракт",
+  "Abort Contract": "Отменить контракт"
 })json");
 		}
 		return s.c_str();
@@ -549,7 +642,7 @@ namespace Language
 			allLangs.push_back(Lang("Russian", dirpath + "\\Russian.json"));
 
 		if (configLangName.empty())
-			configLangName = "Russian";
+			configLangName = "English";
 
 		SetSelectedLangFromConfig();
 		return 0;
@@ -565,7 +658,7 @@ namespace Language
 		std::for_each(allLangs.begin(), allLangs.end(), [](Lang& l) { l.Dictionary().clear(); });
 
 		if (configLangName.empty())
-			configLangName = "Russian";
+			configLangName = "English";
 
 		if (configLangName == "English")
 		{
@@ -623,11 +716,9 @@ namespace Language
 			return 0;
 		}
 
-		addlog(ige::LogType::LOG_ERROR, "Cannot find selected language. Falling back to builtin Russian");
-		configLangName = "Russian";
-		allLangs.push_back(Lang("Russian", GetPathffA(Pathff::Language, true) + "Russian.json"));
-		selectedLang = &allLangs.back();
-		selectedLang->Dictionary() = ParseBuiltinRussian();
+		addlog(ige::LogType::LOG_ERROR, "Cannot find selected language. Falling back to English");
+		configLangName = "English";
+		selectedLang = nullptr;
 		return 0;
 	}
 

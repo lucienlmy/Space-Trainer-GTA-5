@@ -1183,6 +1183,12 @@ void AddOption(std::string text, bool& option_code_bool, void(&callback)(), int 
 	}
 
 	text = Language::TranslateToSelected(text);
+	// Prevent clipped / overflowing labels in the compact SPACE panel.
+	{
+		const size_t maxChars = spaceUi ? 34u : 42u;
+		if (text.size() > maxChars)
+			text = text.substr(0, maxChars - 2) + "..";
+	}
 
 	const float textX = spaceUi ? (L.panelLeft + 0.012f) : (0.058f + menuPos.x);
 	const float textY = OptionY + menuPos.y + (spaceUi ? 0.0015f : 0.0f);

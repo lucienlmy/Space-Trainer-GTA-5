@@ -74,6 +74,7 @@ namespace SpaceExtras
 			{
 				out << "[settings]\n";
 				out << "open_key=116\n";
+				out << "language=English\n";
 				out << "loglevel=1\n";
 				out << "\n[hax-values]\n";
 				out << "space_ui_opacity=0.78\n";

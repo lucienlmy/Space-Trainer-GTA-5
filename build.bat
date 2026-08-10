@@ -27,6 +27,17 @@ if not defined MSBUILD (
 "%MSBUILD%" /m /p:Configuration=Release /p:Platform=x64 "Solution\Space.sln"
 if errorlevel 1 exit /b 1
 
+echo [post] Copying SpaceStuff data next to Space.asi...
+set "OUT=Solution\source\_Build\bin\Release"
+if not exist "%OUT%\SpaceStuff" mkdir "%OUT%\SpaceStuff"
+xcopy /E /I /Y /Q "SpaceStuff\*" "%OUT%\SpaceStuff\" >nul
+if errorlevel 1 (
+  echo WARNING: failed to copy SpaceStuff folder.
+) else (
+  echo Space OK: %OUT%\SpaceStuff\  (needs PedList.xml etc. next to GTA5.exe)
+)
+
 echo.
-echo Build OK: Solution\source\_Build\bin\Release\Space.asi
+echo Build OK: %OUT%\Space.asi
+echo Install BOTH Space.asi AND the SpaceStuff folder into your GTA V root.
 exit /b 0

@@ -51,7 +51,19 @@ bool IsKeyJustUp(DWORD key, bool exclusive)
 	return b;
 }
 
-
+int GetAnyKeyJustUp(bool exclusive)
+{
+	for (DWORD key = 1; key < KEYS_SIZE; ++key)
+	{
+		// Skip mouse buttons / modifiers that are awkward as menu binds
+		if (key <= 6) continue;
+		if (key == VirtualKey::Shift || key == VirtualKey::Control || key == VirtualKey::Menu)
+			continue;
+		if (IsKeyJustUp(key, exclusive))
+			return (int)key;
+	}
+	return 0;
+}
 
 void ResetKeyState(DWORD key)
 {
@@ -66,7 +78,17 @@ std::string VkCodeToStr(UINT8 key)
 	// I can just use GetKeyNameTextA ?
 	switch (key)
 	{
-	default: return ""; break;
+	default:
+	{
+		char name[64] = {};
+		const UINT scan = MapVirtualKeyA(key, MAPVK_VK_TO_VSC);
+		LONG lParam = (LONG)(scan << 16);
+		if (GetKeyNameTextA(lParam, name, 64) > 0 && name[0])
+			return std::string(name);
+		char buf[24];
+		sprintf_s(buf, "Key %u", (unsigned)key);
+		return std::string(buf);
+	}
 	case VirtualKey::A:  return ("A"); break;
 	case VirtualKey::Add:  return ("+"); break;
 	case VirtualKey::Subtract:  return ("-"); break;

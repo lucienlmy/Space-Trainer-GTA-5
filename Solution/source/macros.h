@@ -8,7 +8,7 @@
 
 
 
-#define SPACE_CURRENT_VER_ "3.5.1"
+#define SPACE_CURRENT_VER_ "3.5.2"
 
 #define GAME_PLAYERCOUNT 30
 

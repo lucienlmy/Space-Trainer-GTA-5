@@ -1,6 +1,7 @@
 #include "VehicleSpawner.h"
 #include "..\Util\FileLogger.h"
 #include "..\Util\VehiclePrices.h"
+#include "..\Misc\SpaceProPack.h"
 
 namespace sub
 {
@@ -67,6 +68,24 @@ namespace sub
 
 		// Always non-networked create in SP — networked create freezes/crashes many sports & DLC cars.
 		const BOOL isNetworked = FALSE;
+
+		float groundZ = Pos1.z;
+		GET_GROUND_Z_FOR_3D_COORD(Pos1.x, Pos1.y, Pos1.z + 40.0f, &groundZ, FALSE, FALSE);
+		if (groundZ > -200.0f)
+			Pos1.z = groundZ + 0.6f;
+
+		// Avoid spawning inside interiors (common crash / stuck cause).
+		if (GET_INTERIOR_AT_COORDS(Pos1.x, Pos1.y, Pos1.z) != 0)
+		{
+			Vector3_t node{};
+			float nh = ped.GetHeading();
+			if (GET_CLOSEST_VEHICLE_NODE_WITH_HEADING(Pos1.x, Pos1.y, Pos1.z, &node, &nh, 1, 3.0f, 0.0f))
+			{
+				Pos1.x = node.x; Pos1.y = node.y; Pos1.z = node.z + 0.6f;
+			}
+		}
+
+		REQUEST_COLLISION_AT_COORD(Pos1.x, Pos1.y, Pos1.z);
 		newcar = CREATE_VEHICLE(model.hash, Pos1.x, Pos1.y, Pos1.z, ped.GetHeading(), isNetworked, isNetworked, FALSE);
 		if (!DOES_ENTITY_EXIST(newcar) || newcar == 0)
 		{
@@ -75,9 +94,11 @@ namespace sub
 		}
 
 		SET_ENTITY_AS_MISSION_ENTITY(newcar, true, true);
+		SET_ENTITY_LOAD_COLLISION_FLAG(newcar, true, 1);
 		SET_VEHICLE_HAS_BEEN_OWNED_BY_PLAYER(newcar, true);
 		SET_VEHICLE_NEEDS_TO_BE_HOTWIRED(newcar, false);
 		SET_VEHICLE_ON_GROUND_PROPERLY(newcar, 5.0f);
+		SET_ENTITY_VELOCITY(newcar, 0.0f, 0.0f, 0.0f);
 		SET_VEHICLE_DIRT_LEVEL(newcar, 0.0f);
 		SET_VEHICLE_ENGINE_ON(newcar, true, true, false);
 		SET_VEHICLE_IS_STOLEN(newcar, false);
@@ -132,6 +153,7 @@ namespace sub
 		{
 			GTAvehicle(newcar).SetRadioStation(oldRadioStation);
 			GTAvehicle(newcar).CloseAllDoors(true);
+			SpaceProPack::TrackSpawnedVehicle(newcar);
 		}
 
 		model.Unload();
