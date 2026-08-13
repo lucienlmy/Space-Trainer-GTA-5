@@ -68,8 +68,10 @@ namespace SpaceTheme
 	void NotifySubChanged();
 	float OpenAlpha();
 	float OpenSlideY();
+	float OpenScale();
 	float Pulse();
 	float SelectionEase();
+	float SubtitleAlpha();
 
 	void DrawRoundedPanelApprox(float cx, float cy, float w, float h, const RGBA& col);
 	void DrawHeaderShell(const Layout& L);

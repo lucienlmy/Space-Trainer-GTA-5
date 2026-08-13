@@ -1,6 +1,6 @@
 /*
-* Space Trainer - Pro tools pack
-* Smart vehicle cleanup, mod-safe mode, quick search, film cams,
+* Space Trainer - Tools pack
+* Smart vehicle cleanup, mod-safe mode, film cams,
 * tuning shortcuts, custom gangs, realistic traffic.
 */
 #pragma once
@@ -13,7 +13,6 @@ namespace SpaceProPack
 	bool IsSafeMode();
 	void Tick();
 	void Menu();
-	void QuickSearchMenu();
 	void FilmCamMenu();
 	void GangsMenu();
 	void TrafficMenu();

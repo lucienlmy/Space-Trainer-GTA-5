@@ -348,8 +348,8 @@ void Menu::titlebox_draw()
 	const float headerX = 0.16f + menuPos.x;
 	const float menuW = 0.21f;
 	DRAW_RECT(headerX, 0.1050f + menuPos.y, menuW, 0.085f, titlebox.R, titlebox.G, titlebox.B, 255, false);
-	Game::Print::SetupDraw(GTAfont::Caps, Vector2(0.85f, 0.85f), true, false, false, titletext);
-	Game::Print::drawstring("SPACE", headerX, 0.078f + menuPos.y);
+	Game::Print::SetupDraw(GTAfont::Caps, Vector2(0.55f, 0.55f), true, false, false, titletext);
+	Game::Print::drawstring("SPACE TRAINER", headerX, 0.078f + menuPos.y);
 	DRAW_RECT(headerX, 0.1605f + menuPos.y, menuW, 0.028f, 0, 0, 0, 240, false);
 }
 void Menu::background()
@@ -1183,11 +1183,25 @@ void AddOption(std::string text, bool& option_code_bool, void(&callback)(), int 
 	}
 
 	text = Language::TranslateToSelected(text);
-	// Prevent clipped / overflowing labels in the compact SPACE panel.
+	// UTF-8 safe ellipsize (byte substr was splitting Cyrillic mid-glyph).
 	{
-		const size_t maxChars = spaceUi ? 34u : 42u;
-		if (text.size() > maxChars)
-			text = text.substr(0, maxChars - 2) + "..";
+		const size_t maxCp = spaceUi ? 28u : 36u;
+		size_t i = 0, cp = 0;
+		while (i < text.size() && cp < maxCp)
+		{
+			const unsigned char c = (unsigned char)text[i];
+			if ((c & 0x80) == 0) i += 1;
+			else if ((c & 0xE0) == 0xC0) i += 2;
+			else if ((c & 0xF0) == 0xE0) i += 3;
+			else if ((c & 0xF8) == 0xF0) i += 4;
+			else i += 1;
+			++cp;
+		}
+		if (i < text.size())
+		{
+			while (i > 0 && ((unsigned char)text[i] & 0xC0) == 0x80) --i;
+			text = text.substr(0, i) + "..";
+		}
 	}
 
 	const float textX = spaceUi ? (L.panelLeft + 0.012f) : (0.058f + menuPos.x);

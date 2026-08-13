@@ -1,5 +1,5 @@
 /*
-* Space Trainer - hub menus (World / Spawner / Appearance)
+* Space Trainer - hub menus
 */
 #include "..\Menu\Menu.h"
 #include "..\Menu\submenu_enum.h"
@@ -12,6 +12,11 @@
 #include "..\Menu\Routine.h"
 #include "..\Natives\natives2.h"
 #include "..\Scripting\Game.h"
+#include "..\Scripting\Camera.h"
+#include "..\Scripting\World.h"
+#include "..\Submenus\Bodyguards\BodyguardManagement.h"
+#include "..\Misc\Gta2Cam.h"
+#include "..\macros.h"
 
 #include <vector>
 #include <string>
@@ -25,30 +30,27 @@ namespace sub
 		AddOption("Vehicles", null, nullFunc, SUB::SPAWNVEHICLE);
 		AddOption("Peds / Models", null, nullFunc, SUB::MODELCHANGER);
 		AddOption("Animals", null, nullFunc, SUB::MODELCHANGER_ANIMAL);
-		AddOption("Objects", null, nullFunc, SUB::SPOONER_SPAWN_PROP);
-		AddOption("Creators", null, nullFunc, SUB::SPOONER_MAIN);
+		AddOption("Objects / Creators", null, nullFunc, SUB::SPOONER_MAIN);
 		AddOption("Object Gun", null, nullFunc, SUB::OBJECTSPAWNER_OBJS);
 		AddOption("Companions / Clones", null, nullFunc, SUB::CLONECOMPANIONSUB);
-		AddOption("Custom Skins & Heroes", null, nullFunc, SUB::CUSTOMSKINS);
-		AddOption("Bodyguards", null, nullFunc, SUB::BODYGUARDMAINMENU);
+		AddOption("Custom Skins", null, nullFunc, SUB::CUSTOMSKINS);
 	}
 
 	void WorldHub()
 	{
 		AddTitle("World");
-		AddToggle("Decreased Ped Population", pedPopulation);
-		AddToggle("Decreased Vehicle Population", vehiclePopulation);
-		AddToggle("Clear Weapon Pickups", clearWeaponPickups);
-		AddToggle("EMP / Blackout", blackoutMode);
-		AddToggle("Simple Blackout", simpleBlackoutMode);
-		AddToggle("Massacre Mode", massacreMode);
-		AddToggle("Restricted Area Access", restrictedAreasAccess);
+		AddToggle("Less Peds", pedPopulation);
+		AddToggle("Less Vehicles", vehiclePopulation);
+		AddToggle("Blackout", simpleBlackoutMode);
+		AddToggle("Restricted Areas", restrictedAreasAccess);
 		AddOption("Clear Area", null, nullFunc, SUB::CLEARAREA);
-		AddOption("Vision / Timecycle", null, nullFunc, SUB::TIMECYCLES);
-		AddOption("PC Graphics", null, nullFunc, SUB::GRAPHICSQUALITY);
-		AddOption("Map Mods (Old)", null, nullFunc, SUB::MAPMODS);
+		AddOption("Disasters", null, nullFunc, SUB::DISASTERS);
+		AddOption("Zombie Apocalypse", null, nullFunc, SUB::ZOMBIE_APOCALYPSE);
+		AddOption("Film Cameras", null, nullFunc, SUB::SPACE_FILMCAM);
+		AddOption("Weather FX / Vision", null, nullFunc, SUB::TIMECYCLES);
 		AddOption("HUD Options", null, nullFunc, SUB::HUDOPTIONS);
-		AddOption("Game Camera Options", null, nullFunc, SUB::GAMECAMOPTIONS);
+		AddOption("Cameras", null, nullFunc, SUB::GAMECAMOPTIONS);
+		AddOption("PC Graphics", null, nullFunc, SUB::GRAPHICSQUALITY);
 	}
 
 	void NpcHub()
@@ -60,13 +62,10 @@ namespace sub
 		AddOption("Bodyguards", null, nullFunc, SUB::BODYGUARDMAINMENU);
 		AddBreak("---Animations---");
 		AddOption("Animations", null, nullFunc, SUB::ANIMATIONSUB);
-		AddOption("All Ped Animations", null, nullFunc, SUB::ANIMATIONSUB_ALLPEDANIMS);
 		AddOption("Scenarios", null, nullFunc, SUB::AnimationTaskScenarios);
 		AddOption("Movement Styles", null, nullFunc, SUB::MOVEMENTGROUP);
 		AddOption("Facial Moods", null, nullFunc, SUB::FACIALMOOD);
 		AddOption("Speech Player", null, nullFunc, SUB::SPEECHPLAYER);
-		AddToggle("Decreased Ped Population", pedPopulation);
-		AddOption("Clear Area (Peds)", null, nullFunc, SUB::CLEARAREA);
 	}
 
 	void FunctionsHub()
@@ -74,11 +73,16 @@ namespace sub
 		AddTitle("Functions");
 
 		bool freecamOn = false, freecamOff = false;
-		AddToggle("FreeCam (No-Clip)", noClip, freecamOn, freecamOff);
+		AddToggle("FreeCam", noClip, freecamOn, freecamOff);
 		if (freecamOn)
 		{
+			// Stop other script cams so FreeCam owns the view
+			if (GTA2Cam::g_gta2Cam.Enabled())
+				GTA2Cam::g_gta2Cam.TurnOff();
+			World::DestroyAllCameras();
+			Camera::RenderScriptCams(false);
 			noClipToggle = true;
-			Game::Print::PrintBottomCentre("FreeCam ON. Move with WASD, look with mouse. F3 toggles.");
+			Game::Print::PrintBottomCentre("FreeCam ON. WASD + mouse. F3 toggles.");
 		}
 		if (freecamOff)
 		{
@@ -92,31 +96,22 @@ namespace sub
 		AddToggle("Super Run", superRun);
 		AddToggle("Super Jump", superJump);
 		AddToggle("God Mode", playerInvincibility);
-		AddToggle("No Ragdoll", playerNoRagdoll);
 		AddToggle("Never Wanted", neverWanted);
-		AddToggle("Show Coordinates", bDisplayXyzhCoords);
-		AddToggle("Show FPS", FPSCounter::bDisplayFps);
 		AddToggle("Infinite Ammo", bitInfiniteAmmo);
-		AddToggle("Explosive Melee", explosiveMelee);
-		AddToggle("Rapid Fire", rapidFire);
-		AddToggle("Drive On Water", driveOnWater);
 
-		AddBreak("---Chaos Modes---");
+		AddBreak("---Modes---");
 		AddOption("Chaos Modes", null, nullFunc, SUB::CHAOSMODES);
 		AddOption("Contract Hits", null, nullFunc, SUB::HITMAN_CONTRACTS);
+		AddOption("Disasters", null, nullFunc, SUB::DISASTERS);
+		AddOption("Zombie Apocalypse", null, nullFunc, SUB::ZOMBIE_APOCALYPSE);
+		AddOption("Professions", null, nullFunc, SUB::PROFESSIONS);
+		AddOption("Tools Pack", null, nullFunc, SUB::SPACE_PROPACK);
 
-		AddBreak("---Pro Pack---");
-		AddOption("Space Pro Pack", null, nullFunc, SUB::SPACE_PROPACK);
-		AddOption("Quick Search (~)", null, nullFunc, SUB::SPACE_QUICKSEARCH);
-
-		AddBreak("---Modules---");
+		AddBreak("---More---");
 		AddOption("Misc Options", null, nullFunc, SUB::MISCOPS);
 		AddOption("Space Extras", null, nullFunc, SUB::SPACEEXTRAS);
 		AddOption("Hero Abilities", null, nullFunc, SUB::HEROABILITIES);
-		AddOption("Cutscene Player", null, nullFunc, SUB::CUTSCENEPLAYER);
-		AddOption("TV Player", null, nullFunc, SUB::TVCHANNELSTUFF_TV);
 		AddOption("Radio", null, nullFunc, SUB::RADIOSUB);
-		AddOption("Animal Riding (SP)", null, nullFunc, SUB::ANIMALRIDING);
 	}
 
 	void AppearanceHub()
@@ -150,29 +145,22 @@ namespace sub
 		if (txPlus && textPct < 130) { textPct += 5; SpaceTheme::textScale = textPct / 100.0f; }
 		if (txMinus && textPct > 70) { textPct -= 5; SpaceTheme::textScale = textPct / 100.0f; }
 
-		bool blPlus = false, blMinus = false;
-		int blurPct = (int)(SpaceTheme::uiBlur * 100.0f + 0.5f);
-		AddNumber("Blur Intensity %", blurPct, 0, null, blPlus, blMinus);
-		if (blPlus && blurPct < 100) { blurPct += 5; SpaceTheme::uiBlur = blurPct / 100.0f; }
-		if (blMinus && blurPct > 0) { blurPct -= 5; SpaceTheme::uiBlur = blurPct / 100.0f; }
-
-		bool anPlus = false, anMinus = false;
-		std::vector<std::string> anims{ "Off", "Low", "Medium", "High" };
-		AddTexter("Animations", (int)SpaceTheme::animQuality, anims, null, anPlus, anMinus);
-		if (anPlus && (int)SpaceTheme::animQuality < 3) SpaceTheme::animQuality = (SpaceTheme::AnimQuality)((int)SpaceTheme::animQuality + 1);
-		if (anMinus && (int)SpaceTheme::animQuality > 0) SpaceTheme::animQuality = (SpaceTheme::AnimQuality)((int)SpaceTheme::animQuality - 1);
-
 		AddToggle("Live Pulse", SpaceTheme::livePulse);
 		AddToggle("Show Tips", SpaceTheme::showTips);
-		AddToggle("Row Dividers", SpaceTheme::showRowDividers);
 		AddToggle("Show FPS", FPSCounter::bDisplayFps);
+
+		bool animPlus = false, animMinus = false;
+		std::vector<std::string> animQ{ "Off", "Low", "Medium", "High" };
+		AddTexter("UI Animation", (int)SpaceTheme::animQuality, animQ, null, animPlus, animMinus);
+		if (animPlus && (int)SpaceTheme::animQuality < 3)
+			SpaceTheme::animQuality = (SpaceTheme::AnimQuality)((int)SpaceTheme::animQuality + 1);
+		if (animMinus && (int)SpaceTheme::animQuality > 0)
+			SpaceTheme::animQuality = (SpaceTheme::AnimQuality)((int)SpaceTheme::animQuality - 1);
 
 		AddOption("Custom Themes Folder", null, nullFunc, SUB::CUSTOM_THEMES);
 		AddOption("Menu Position", null, nullFunc, SUB::SETTINGS_MENUPOS);
-		AddOption("Menu Colours (Advanced)", null, nullFunc, SUB::SETTINGS_COLOURS);
 
-		bool reset = false;
-		bool saveTheme = false;
+		bool saveTheme = false, reset = false;
 		AddOption("Save As Custom Theme...", saveTheme);
 		AddOption("Reset Appearance", reset);
 		if (saveTheme)
@@ -180,8 +168,7 @@ namespace sub
 			std::string name = Game::InputBox("", 40U, "Theme name", "My Theme");
 			if (!name.empty())
 			{
-				std::string author = Game::InputBox("", 30U, "Author", "xdigr");
-				if (CustomThemes::SaveCurrentTheme(name, author.empty() ? "xdigr" : author))
+				if (CustomThemes::SaveCurrentTheme(name, "xdigr"))
 					Game::Print::PrintBottomLeft("~g~Saved to SpaceStuff\\Themes");
 				else
 					Game::Print::PrintBottomLeft("~r~Save failed.");
@@ -189,15 +176,12 @@ namespace sub
 		}
 		if (reset)
 		{
-			SpaceTheme::SetNamedTheme(SpaceTheme::AccentPreset::Cyan);
-			SpaceTheme::uiOpacity = 0.78f;
+			SpaceTheme::accentPreset = SpaceTheme::AccentPreset::Cyan;
+			SpaceTheme::uiOpacity = 0.82f;
 			SpaceTheme::uiScale = 1.0f;
 			SpaceTheme::textScale = 1.0f;
-			SpaceTheme::uiBlur = 0.22f;
-			SpaceTheme::animQuality = SpaceTheme::AnimQuality::Medium;
-			SpaceTheme::livePulse = true;
-			SpaceTheme::showTips = true;
-			SpaceTheme::showRowDividers = true;
+			SpaceTheme::uiBlur = 0.28f;
+			SpaceTheme::animQuality = SpaceTheme::AnimQuality::High;
 			SpaceTheme::ApplyDefaultsToLegacyColors();
 			Game::Print::PrintBottomLeft("Appearance reset.");
 		}
@@ -212,26 +196,19 @@ namespace sub
 		Vector3 pos = GET_ENTITY_COORDS(me, true);
 		Vector3 vel = GET_ENTITY_VELOCITY(me);
 		float speed = SYSTEM::VMAG(vel.x, vel.y, vel.z) * 3.6f;
-		int wanted = GET_PLAYER_WANTED_LEVEL(pl);
-		int hp = GET_ENTITY_HEALTH(me);
-		int armor = GET_PED_ARMOUR(me);
-		int hour = GET_CLOCK_HOURS();
-		int minute = GET_CLOCK_MINUTES();
 
 		char buf[96];
-		sprintf_s(buf, "Health: %d", hp);
+		sprintf_s(buf, "Health: %d", GET_ENTITY_HEALTH(me));
 		AddOption(buf, null);
-		sprintf_s(buf, "Armor: %d", armor);
+		sprintf_s(buf, "Armor: %d", GET_PED_ARMOUR(me));
 		AddOption(buf, null);
-		sprintf_s(buf, "Wanted: %d", wanted);
+		sprintf_s(buf, "Wanted: %d", GET_PLAYER_WANTED_LEVEL(pl));
 		AddOption(buf, null);
 		sprintf_s(buf, "Speed: %.0f km/h", speed);
 		AddOption(buf, null);
 		sprintf_s(buf, "XYZ: %.1f  %.1f  %.1f", pos.x, pos.y, pos.z);
 		AddOption(buf, null);
-		sprintf_s(buf, "Time: %02d:%02d", hour, minute);
-		AddOption(buf, null);
-		sprintf_s(buf, "FPS overlay: %s", FPSCounter::bDisplayFps ? "ON" : "OFF");
+		sprintf_s(buf, "Bodyguards: %u / 7", (unsigned)sub::BodyguardMenu::BodyguardDb.size());
 		AddOption(buf, null);
 
 		bool openStats = false, toggleFps = false;

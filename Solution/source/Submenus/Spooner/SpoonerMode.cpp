@@ -36,6 +36,7 @@
 #include <set>
 #include <math.h>
 #include <Menu/Routine.h>
+#include "..\..\Misc\Gta2Cam.h"
 
 namespace sub::Spooner
 {
@@ -969,6 +970,17 @@ namespace sub::Spooner
 		{
 			if (!g_menuNotOpenedYet)
 			{
+				// Spooner owns the freecam — stop trainer cams that fight it.
+				if (noClipToggle)
+				{
+					SetNoclipOff1();
+					SetNoclipOff2();
+					noClipToggle = false;
+					noClip = false;
+				}
+				if (GTA2Cam::g_gta2Cam.Enabled())
+					GTA2Cam::g_gta2Cam.TurnOff();
+
 				SpoonerMode::bEnabled = true;
 				sub::Spooner::ImGuiSpooner::SetVisible(true);
 				if (Menu::currentsub != SUB::CLOSED)

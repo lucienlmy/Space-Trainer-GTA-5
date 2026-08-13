@@ -59,12 +59,10 @@ namespace GTA2Cam
 
 		CreateMainCam(myPed);
 
-		gmCam2.InterpTo(mainCam, 2500, true, true); // Wait for interp?
-
+		gmCam2.InterpTo(mainCam, 2500, true, true);
 		Camera::RenderScriptCams(true);
-
-		if (gmCam2.Exists())
-			gmCam2.Destroy();
+		mainCam.SetActive(true);
+		// Keep gmCam2 until interp finishes; DoGta2CamTick cleans it when done.
 	}
 	void Gta2Cam::TurnOff()
 	{
@@ -96,8 +94,15 @@ namespace GTA2Cam
 
 		if (mainCam.Exists())
 		{
+			if (gmCam2.Exists() && mainCam.IsActive())
+			{
+				gmCam2.Destroy();
+				gmCam2 = Camera();
+			}
+
 			if (mainCam.IsActive())
 			{
+				Camera::RenderScriptCams(true);
 				Vector3 myPos = myPed.GetPosition();
 
 				mainCam.SetPosition(myPos + mainCamRelativePos);

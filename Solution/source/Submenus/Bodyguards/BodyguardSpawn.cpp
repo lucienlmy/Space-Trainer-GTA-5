@@ -161,7 +161,9 @@ namespace sub::BodyguardMenu::BodyguardManagement
 		SET_PED_CAN_BE_KNOCKED_OFF_VEHICLE(ped, 1);
 		SET_PED_CONFIG_FLAG(ped, 32, false);
 		SET_PED_CONFIG_FLAG(ped, 184, true);
+		SET_PED_CONFIG_FLAG(ped, 141, true);
 		SET_PED_CAN_RAGDOLL(ped, false);
+		SET_PED_COMBAT_ATTRIBUTES(ped, 3, true);
 
 		GIVE_WEAPON_TO_PED(ped, WEAPON_COMBATPISTOL, 250, false, true);
 		GIVE_WEAPON_TO_PED(ped, WEAPON_CARBINERIFLE, 250, false, false);
@@ -171,8 +173,7 @@ namespace sub::BodyguardMenu::BodyguardManagement
 		SET_GROUP_SEPARATION_RANGE(group, 9999.0f);
 		SET_GROUP_FORMATION_SPACING(group, 1.5f, 2.5f, 3.5f);
 		SET_PED_CAN_TELEPORT_TO_GROUP_LEADER(ped, group, true);
-		TASK_FOLLOW_TO_OFFSET_OF_ENTITY(ped, player.Handle(), 0.8f, -1.2f, 0.0f, 2.0f, -1, 1.5f, true);
-
+		TASK_FOLLOW_TO_OFFSET_OF_ENTITY(ped, player.Handle(), 0.8f, -1.2f, 0.0f, 4.5f, -1, 1.2f, true);
 		BodyguardEntity ent{};
 		ent.Handle = GTAentity(ped);
 		ent.Type = EntityType::PED;

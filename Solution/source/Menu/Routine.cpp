@@ -43,10 +43,13 @@
 #include "..\Misc\MagnetGun.h"
 #include "..\Misc\ManualRespawn.h"
 #include "..\Misc\MeteorShower.h"
+#include "..\Misc\Disasters.h"
+#include "..\Misc\Professions.h"
+#include "..\Misc\ZombieApocalypse.h"
+#include "..\Misc\SpaceProPack.h"
 #include "..\Misc\RopeGun.h"
 #include "..\Misc\SmashAbility.h"
 #include "..\Misc\SpaceExtras.h"
-#include "..\Misc\SpaceProPack.h"
 #include "..\Misc\HitmanContracts.h"
 #include "..\Misc\VehicleCruise.h"
 #include "..\Misc\VehicleFly.h"
@@ -98,7 +101,7 @@ bool defaultPedSet = false;
 
 void Menu::justopened()
 {
-	Game::Print::PrintBottomLeft(oss_ << "Space v" << SPACE_CURRENT_VER_ << " by xdigr | t.me/xdigr");
+	Game::Print::PrintBottomLeft(oss_ << "SPACE TRAINER v" << SPACE_CURRENT_VER_ << " by xdigr | t.me/xdigr");
 
 	SET_AUDIO_FLAG("IsDirectorModeActive", true);
 
@@ -1781,7 +1784,9 @@ void SetNoclipOff1()
 	GTAentity ent = IS_PED_IN_ANY_VEHICLE(myPed.Handle(), false) ? GET_VEHICLE_PED_IS_IN(myPed.Handle(), false) : myPed;
 
 	ent.RequestControl();
-	ent.SetVisible(!bitNoclipAlreadyInvisible);
+	// Always restore visibility — FreeCam no longer hides the ped.
+	ent.SetVisible(true);
+	myPed.SetVisible(true);
 	ent.SetIsCollisionEnabled(bitNoclipAlreadyCollision);
 	ent.FreezePosition(false);
 	ENABLE_CONTROL_ACTION(2, INPUT_VEH_HORN, TRUE);
@@ -1795,9 +1800,11 @@ void SetNoclipOff2()
 	auto& cam = g_cam_noClip;
 	if (cam.Exists())
 	{
+		cam.Detach();
 		cam.SetActive(false);
 		cam.Destroy();
 		World::SetRenderingCamera(0);
+		Camera::RenderScriptCams(false);
 	}
 }
 void SetNoclip()
@@ -1872,30 +1879,29 @@ void SetNoclip()
 		DISABLE_CONTROL_ACTION(2, INPUT_VEH_BRAKE, TRUE);
 		DISABLE_CONTROL_ACTION(2, INPUT_VEH_RADIO_WHEEL, TRUE);
 
-		const Vector3& entPos = ent.GetPosition();
-		const Vector3& camOffset = Vector3();
-
 		if (!cam.Exists())
 		{
-			ent.RequestControl();
 			cam = World::CreateCamera();
 			cam.SetPosition(GameplayCamera::GetPosition());
 			cam.SetRotation(GameplayCamera::GetRotation());
-			cam.AttachTo(ent, camOffset);
-			cam.SetFieldOfView(MenuConfig::FreeCam::defaultFov); // Use configured FOV
+			cam.SetFieldOfView(MenuConfig::FreeCam::defaultFov);
 			cam.SetDepthOfFieldStrength(0.0f);
+			cam.SetActive(true);
 			World::SetRenderingCamera(cam);
+			Camera::RenderScriptCams(true);
 		}
 
+		// Keep player/vehicle visible on the ground; only the camera flies.
 		ent.RequestControl();
 		ent.FreezePosition(true);
-		ent.SetIsCollisionEnabled(false);
-		ent.SetVisible(false);
-		myPed.SetVisible(false);
+		ent.SetIsCollisionEnabled(true);
+		ent.SetVisible(true);
+		myPed.SetVisible(true);
+		cam.SetActive(true);
+		Camera::RenderScriptCams(true);
 
 		Vector3 nextRot = cam.GetRotation() - Vector3(GET_DISABLED_CONTROL_NORMAL(0, INPUT_LOOK_UD), 0, GET_DISABLED_CONTROL_NORMAL(0, INPUT_LOOK_LR)) * (Menu::bitController ? 2.5f : 11.0f);
 		nextRot.y = 0.0f; // No roll
-		ent.SetRotation(Vector3(0, 0, nextRot.z));
 		cam.SetRotation(nextRot);
 		if (!myPlayer.IsFreeAiming() && !myPlayer.IsTargetingAnything())
 		{
@@ -1925,7 +1931,7 @@ void SetNoclip()
 			offset.z = (GET_DISABLED_CONTROL_NORMAL(2, INPUT_FRONTEND_RT) - GET_DISABLED_CONTROL_NORMAL(2, INPUT_FRONTEND_LT)) * noclipPrecisionLevel;
 			if (!offset.IsZero())
 			{
-				ent.SetPosition(cam.GetOffsetInWorldCoords(offset - camOffset));
+				cam.SetPosition(cam.GetOffsetInWorldCoords(offset));
 			}
 
 		}
@@ -1939,7 +1945,7 @@ void SetNoclip()
 					g_freecamHeightLocked = !g_freecamHeightLocked;
 					if (g_freecamHeightLocked)
 					{
-						g_freecamLockedHeight = ent.GetPosition().z;
+						g_freecamLockedHeight = cam.GetPosition().z;
 						g_lastHeightLockMessage = "Height Locked";
 					}
 					else
@@ -1989,16 +1995,16 @@ void SetNoclip()
 					g_freecamLockedHeight += zOffset;
 				}
 
-				Vector3 newPos = cam.GetOffsetInWorldCoords(offset - camOffset);
+				Vector3 newPos = cam.GetOffsetInWorldCoords(offset);
 				newPos.z = g_freecamLockedHeight;
-				ent.SetPosition(newPos);
+				cam.SetPosition(newPos);
 			}
 			else
 			{
 				offset.z = IS_DISABLED_CONTROL_PRESSED(2, INPUT_PARACHUTE_BRAKE_RIGHT) ? noclipPrecisionLevel : IS_DISABLED_CONTROL_PRESSED(2, INPUT_PARACHUTE_BRAKE_LEFT) ? -noclipPrecisionLevel : 0.0f;
 				if (!offset.IsZero())
 				{
-					ent.SetPosition(cam.GetOffsetInWorldCoords(offset - camOffset));
+					cam.SetPosition(cam.GetOffsetInWorldCoords(offset));
 				}
 			}
 
@@ -3326,6 +3332,9 @@ static void TickSubsystems()
 	sub::WaterHack::Tick();
 	sub::LaserSight_catind::Tick();
 	MeteorShower::g_meteorShower.Tick();
+	Disasters::Tick();
+	Professions::Tick();
+	ZombieApocalypse::Tick();
 	SmashAbility::g_smashAbility.Tick();
 	SpaceExtras::Tick();
 	ChaosModes::Tick();
@@ -3338,10 +3347,14 @@ static void TickSubsystems()
 	GTA2Cam::g_gta2Cam.Tick();
 	SetPTFXLopTick();
 
-	// Keep bodyguards immortal + smart follow-up.
+	// Keep bodyguards immortal + smart follow / vehicle sync.
 	static DWORD s_bgSmartTick = 0;
-	const bool doSmart = (GetTickCount() - s_bgSmartTick) > 1500;
+	const bool doSmart = (GetTickCount() - s_bgSmartTick) > 900;
 	if (doSmart) s_bgSmartTick = GetTickCount();
+
+	Ped playerPed = PLAYER_PED_ID();
+	const bool playerInVeh = DOES_ENTITY_EXIST(playerPed) && IS_PED_IN_ANY_VEHICLE(playerPed, false);
+	Vehicle playerVeh = playerInVeh ? GET_VEHICLE_PED_IS_IN(playerPed, false) : 0;
 
 	for (auto& bg : sub::BodyguardMenu::BodyguardDb)
 	{
@@ -3354,17 +3367,42 @@ static void TickSubsystems()
 		if (sub::BodyguardMenu::godmode)
 			SetPedInvincibleOn(ped);
 
-		if (doSmart)
+		if (!doSmart)
+			continue;
+
+		SET_PED_KEEP_TASK(ped, true);
+		SET_PED_HIGHLY_PERCEPTIVE(ped, true);
+		SET_PED_COMBAT_ATTRIBUTES(ped, 46, true);
+		SET_PED_COMBAT_ATTRIBUTES(ped, 3, true);
+
+		const int group = GET_PLAYER_GROUP(PLAYER_ID());
+		if (!IS_PED_GROUP_MEMBER(ped, group))
+			SET_PED_AS_GROUP_MEMBER(ped, group);
+
+		if (playerInVeh && DOES_ENTITY_EXIST(playerVeh))
 		{
-			SET_PED_KEEP_TASK(ped, true);
-			SET_PED_HIGHLY_PERCEPTIVE(ped, true);
-			SET_PED_COMBAT_ATTRIBUTES(ped, 46, true);
-			if (!IS_PED_IN_COMBAT(ped, 0) && !IS_PED_IN_ANY_VEHICLE(ped, false))
+			if (!IS_PED_IN_VEHICLE(ped, playerVeh, false) && !IS_PED_GETTING_INTO_A_VEHICLE(ped))
 			{
-				const int group = GET_PLAYER_GROUP(PLAYER_ID());
-				if (!IS_PED_GROUP_MEMBER(ped, group))
-					SET_PED_AS_GROUP_MEMBER(ped, group);
+				const int maxSeat = GET_VEHICLE_MAX_NUMBER_OF_PASSENGERS(playerVeh);
+				for (int s = 0; s <= maxSeat; ++s)
+				{
+					if (IS_VEHICLE_SEAT_FREE(playerVeh, s, true))
+					{
+						CLEAR_PED_TASKS(ped);
+						TASK_ENTER_VEHICLE(ped, playerVeh, 10000, s, 2.0f, 1, 0);
+						break;
+					}
+				}
 			}
+		}
+		else if (!IS_PED_IN_ANY_VEHICLE(ped, false) && !IS_PED_IN_COMBAT(ped, 0))
+		{
+			Vector3 pp = GET_ENTITY_COORDS(playerPed, true);
+			Vector3 bp = GET_ENTITY_COORDS(ped, true);
+			const float dx = pp.x - bp.x, dy = pp.y - bp.y, dz = pp.z - bp.z;
+			const float dist2 = dx * dx + dy * dy + dz * dz;
+			if (dist2 > 18.0f * 18.0f)
+				TASK_FOLLOW_TO_OFFSET_OF_ENTITY(ped, playerPed, 0.8f, -1.2f, 0.0f, 4.5f, -1, 1.2f, true);
 		}
 	}
 }

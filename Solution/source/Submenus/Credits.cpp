@@ -24,9 +24,9 @@ namespace sub
 {
 	void CreditsMenu()
 	{
-		AddTitle("SPACE");
+		AddTitle("SPACE TRAINER");
 
-		AddBreak("---SPACE Trainer---");
+		AddBreak("---SPACE TRAINER---");
 		AddOption(std::string("Version: ") + SPACE_CURRENT_VER_, null);
 
 		AddBreak("---Created by---");

@@ -19,12 +19,11 @@ namespace SpaceMenuData
 			{ "time",        "Time",         "Set, freeze and speed up time.", SUB::TIMEOPS },
 			{ "npc",         "NPC",          "Spawn and control NPCs.", SUB::NPC_HUB },
 			{ "animations",  "Animations",   "Player and NPC animations.", SUB::ANIMATIONSUB },
-			{ "functions",   "Functions",    "Freecam, chaos modes and extras.", SUB::FUNCTIONS_HUB },
-			{ "propack",     "Pro Pack",     "Cleanup, film cams, gangs, traffic.", SUB::SPACE_PROPACK },
-			{ "appearance",  "Appearance",   "SPACE look, themes and UI scale.", SUB::APPEARANCE_HUB },
+			{ "functions",   "Functions",    "Freecam, disasters, professions and tools.", SUB::FUNCTIONS_HUB },
+			{ "appearance",  "Appearance",   "SPACE TRAINER look, themes and UI scale.", SUB::APPEARANCE_HUB },
 			{ "stats",       "Statistics",   "Live player and world statistics.", SUB::STATISTICS_HUB },
 			{ "settings",    "Settings",     "Language, binds and config.", SUB::SETTINGS },
-			{ "about",       "SPACE",        "About SPACE trainer and links.", SUB::SPACE_ABOUT },
+			{ "about",       "SPACE TRAINER","About SPACE TRAINER and links.", SUB::SPACE_ABOUT },
 		};
 		return cats;
 	}

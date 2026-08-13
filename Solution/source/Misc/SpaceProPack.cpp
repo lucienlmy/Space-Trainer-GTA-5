@@ -17,8 +17,8 @@
 #include "..\Scripting\World.h"
 #include "..\Scripting\enums.h"
 #include "..\Submenus\VehicleModShop.h"
+#include "..\Misc\Gta2Cam.h"
 #include "..\Util\ExePath.h"
-#include "..\Util\keyboard.h"
 #include "..\Util\StringManip.h"
 
 #include <pugixml\src\pugixml.hpp>
@@ -55,7 +55,6 @@ namespace SpaceProPack
 	static float s_filmShake = 0.0f;
 	static bool s_filmLockPlayer = true;
 
-	static std::string s_searchQuery;
 	static std::string s_gangNameInput = "MyGang";
 
 	static std::string GangsDir()
@@ -182,10 +181,27 @@ namespace SpaceProPack
 		s_filmCam = Camera();
 	}
 
+	static void KillConflictingCams()
+	{
+		if (noClipToggle)
+		{
+			SetNoclipOff1();
+			SetNoclipOff2();
+			noClipToggle = false;
+			noClip = false;
+		}
+		if (GTA2Cam::g_gta2Cam.Enabled())
+			GTA2Cam::g_gta2Cam.TurnOff();
+	}
+
 	static void EnsureFilmCam()
 	{
 		if (!s_filmCam.Exists())
+		{
 			s_filmCam = World::CreateCamera();
+			if (!s_filmCam.Exists())
+				return;
+		}
 		s_filmCam.SetActive(true);
 		Camera::RenderScriptCams(true);
 		s_filmCam.SetFieldOfView(s_filmFov);
@@ -203,11 +219,11 @@ namespace SpaceProPack
 	{
 		if (s_filmMode == FilmMode::Off)
 			return;
-		if (s_safeMode && noClipToggle)
+
+		// FreeCam / Spooner freecam wins if the player enabled it after film.
+		if (noClipToggle)
 		{
-			// Avoid fighting FreeCam / other camera scripts.
 			StopFilmCam();
-			Game::Print::PrintBottomCentre("~y~Film cam paused (Safe Mode + FreeCam).");
 			return;
 		}
 
@@ -216,13 +232,15 @@ namespace SpaceProPack
 			return;
 
 		EnsureFilmCam();
+		if (!s_filmCam.Exists())
+			return;
+
 		GTAentity target = me;
 		if (IS_PED_IN_ANY_VEHICLE(me, false))
 			target = GET_VEHICLE_PED_IS_IN(me, false);
 
 		Vector3 tpos = GET_ENTITY_COORDS(target.Handle(), true);
-		float heading = GET_ENTITY_HEADING(target.Handle());
-		s_filmOrbit += 0.35f;
+		s_filmOrbit += 0.55f;
 		if (s_filmOrbit > 360.0f)
 			s_filmOrbit -= 360.0f;
 
@@ -231,34 +249,24 @@ namespace SpaceProPack
 		{
 		case FilmMode::Orbit:
 		{
-			const float rad = (heading + s_filmOrbit) * 0.01745329251f;
+			const float rad = s_filmOrbit * 0.01745329251f;
 			camPos.x = tpos.x + std::cos(rad) * s_filmDist;
 			camPos.y = tpos.y + std::sin(rad) * s_filmDist;
 			camPos.z = tpos.z + s_filmHeight;
 			break;
 		}
 		case FilmMode::Chase:
-		{
-			Vector3 back = GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(target.Handle(), 0.0f, -s_filmDist, s_filmHeight);
-			camPos = back;
+			camPos = GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(target.Handle(), 0.0f, -s_filmDist, s_filmHeight);
 			break;
-		}
 		case FilmMode::Dolly:
-		{
-			Vector3 side = GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(target.Handle(), s_filmDist, 2.0f, s_filmHeight);
-			camPos = side;
+			camPos = GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(target.Handle(), s_filmDist, 2.0f, s_filmHeight);
 			break;
-		}
 		case FilmMode::Fixed:
-			// Keep current camera world position; only re-point.
 			camPos = s_filmCam.GetPosition();
 			break;
 		case FilmMode::LowAngle:
-		{
-			Vector3 front = GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(target.Handle(), 0.0f, s_filmDist, 0.35f);
-			camPos = front;
+			camPos = GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(target.Handle(), 0.0f, s_filmDist, 0.4f);
 			break;
-		}
 		default:
 			break;
 		}
@@ -267,6 +275,8 @@ namespace SpaceProPack
 			s_filmCam.SetPosition(camPos);
 		s_filmCam.PointAt(target);
 		s_filmCam.SetFieldOfView(s_filmFov);
+		s_filmCam.SetActive(true);
+		Camera::RenderScriptCams(true);
 
 		if (s_filmLockPlayer)
 		{
@@ -309,26 +319,8 @@ namespace SpaceProPack
 		}
 	}
 
-	static void OpenQuickSearchHotkey()
-	{
-		if (!IsKeyJustUp(VirtualKey::OEM3))
-			return;
-		if (Menu::currentsub == SUB::CLOSED)
-		{
-			Menu::currentsub = SUB::MAINMENU;
-			Menu::currentArrayIndex = 0;
-			Menu::SetSub_delayed = SUB::SPACE_QUICKSEARCH;
-		}
-		else if (Menu::currentsub != SUB::SPACE_QUICKSEARCH)
-		{
-			Menu::SetSub_delayed = SUB::SPACE_QUICKSEARCH;
-		}
-	}
-
 	void Tick()
 	{
-		OpenQuickSearchHotkey();
-
 		if (s_autoPruneSpawned)
 		{
 			static DWORD lastPrune = 0;
@@ -495,10 +487,11 @@ namespace SpaceProPack
 		AddOption("Low Angle Cam", mLow);
 
 		auto start = [](FilmMode m) {
+			KillConflictingCams();
 			s_filmMode = m;
+			EnsureFilmCam();
 			if (m == FilmMode::Fixed)
 			{
-				EnsureFilmCam();
 				Ped me = PLAYER_PED_ID();
 				Vector3 pos = GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(me, 0.0f, -s_filmDist, s_filmHeight);
 				s_filmCam.SetPosition(pos);
@@ -642,100 +635,18 @@ namespace SpaceProPack
 		}
 	}
 
-	struct SearchEntry { const char* name; int sub; };
-	static const SearchEntry kSearchEntries[] = {
-		{ "player", SUB::PLAYEROPS },
-		{ "weapons", SUB::WEAPONOPS },
-		{ "vehicles", SUB::VEHICLEOPS },
-		{ "mod shop", SUB::MODSHOP },
-		{ "tuning", SUB::MODSHOP },
-		{ "space customs", SUB::MODSHOP },
-		{ "spawn vehicle", SUB::SPAWNVEHICLE },
-		{ "spawner", SUB::SPAWNER_HUB },
-		{ "bodyguards", SUB::BODYGUARDMAINMENU },
-		{ "teleport", SUB::TELEPORTOPS },
-		{ "world", SUB::WORLD_HUB },
-		{ "weather", SUB::WEATHEROPS },
-		{ "time", SUB::TIMEOPS },
-		{ "animations", SUB::ANIMATIONSUB },
-		{ "freecam", SUB::FUNCTIONS_HUB },
-		{ "chaos", SUB::CHAOSMODES },
-		{ "skins", SUB::CUSTOMSKINS },
-		{ "heroes", SUB::HEROABILITIES },
-		{ "spooner", SUB::SPOONER_MAIN },
-		{ "settings", SUB::SETTINGS },
-		{ "appearance", SUB::APPEARANCE_HUB },
-		{ "clear area", SUB::CLEARAREA },
-		{ "film camera", SUB::SPACE_FILMCAM },
-		{ "camera", SUB::SPACE_FILMCAM },
-		{ "traffic", SUB::SPACE_TRAFFIC },
-		{ "gangs", SUB::SPACE_GANGS },
-		{ "cleanup", SUB::SPACE_VEHICLECLEAN },
-		{ "delete cars", SUB::SPACE_VEHICLECLEAN },
-		{ "contract", SUB::HITMAN_CONTRACTS },
-		{ "hitman", SUB::HITMAN_CONTRACTS },
-		{ "assassin", SUB::HITMAN_CONTRACTS },
-		{ "quick search", SUB::SPACE_QUICKSEARCH },
-		{ "pro pack", SUB::SPACE_PROPACK },
-		{ "peds", SUB::MODELCHANGER },
-		{ "animals", SUB::MODELCHANGER_ANIMAL },
-		{ "cutscene", SUB::CUTSCENEPLAYER },
-		{ "radio", SUB::RADIOSUB },
-		{ "graphics", SUB::GRAPHICSQUALITY },
-		{ "game camera", SUB::GAMECAMOPTIONS },
-	};
-
-	void QuickSearchMenu()
-	{
-		AddTitle("Quick Search (~)");
-		AddOption("Type like CS console — jump to menu", null);
-
-		bool typeQuery = false;
-		AddOption(s_searchQuery.empty() ? "Enter search..." : ("Query: " + s_searchQuery), typeQuery);
-		if (typeQuery)
-		{
-			std::string in = Game::InputBox(s_searchQuery, 40U, "Search menus (e.g. tuning, gangs):");
-			s_searchQuery = in;
-		}
-
-		bool clear = false;
-		AddOption("Clear Query", clear);
-		if (clear) s_searchQuery.clear();
-
-		AddBreak("---Results---");
-		std::string q = boost::to_lower_copy(s_searchQuery);
-		int shown = 0;
-		for (const auto& e : kSearchEntries)
-		{
-			std::string name = e.name;
-			if (!q.empty() && name.find(q) == std::string::npos)
-				continue;
-			bool go = false;
-			AddOption(name, go, nullFunc, e.sub);
-			if (go)
-				Menu::SetSub_delayed = e.sub;
-			if (++shown >= 18)
-				break;
-		}
-		if (shown == 0)
-			AddOption("No matches", null);
-	}
-
 	void Menu()
 	{
-		AddTitle("Space Pro Pack");
+		AddTitle("Tools Pack");
 
 		bool safeOn = false, safeOff = false;
 		AddToggle("Safe Mode (mod compatibility)", s_safeMode, safeOn, safeOff);
 		if (safeOn)
 		{
 			ChaosModes::StopAll();
-			if (s_filmMode != FilmMode::Off && noClipToggle)
-				StopFilmCam();
 			Game::Print::PrintBottomCentre("~g~Safe Mode ON — chaos paused, less conflicts.");
 		}
 
-		AddOption("Quick Search (~)", null, nullFunc, SUB::SPACE_QUICKSEARCH);
 		AddOption("Smart Vehicle Cleanup", null, nullFunc, SUB::SPACE_VEHICLECLEAN);
 		AddOption("Film Cameras", null, nullFunc, SUB::SPACE_FILMCAM);
 		AddOption("Car Tuning (Mod Shop)", null, nullFunc, SUB::MODSHOP);
@@ -773,7 +684,6 @@ namespace SpaceProPack
 }
 
 REGISTER_SUBMENU(SPACE_PROPACK, SpaceProPack::Menu)
-REGISTER_SUBMENU(SPACE_QUICKSEARCH, SpaceProPack::QuickSearchMenu)
 REGISTER_SUBMENU(SPACE_FILMCAM, SpaceProPack::FilmCamMenu)
 REGISTER_SUBMENU(SPACE_GANGS, SpaceProPack::GangsMenu)
 REGISTER_SUBMENU(SPACE_TRAFFIC, SpaceProPack::TrafficMenu)

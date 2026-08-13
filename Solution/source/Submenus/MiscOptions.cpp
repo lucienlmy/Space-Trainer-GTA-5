@@ -27,7 +27,7 @@ namespace sub
 		AddLocal("Top-Down View", GTA2Cam::g_gta2Cam.Enabled(), GTA2Cam::ToggleOnOff, GTA2Cam::ToggleOnOff);
 		AddLocal("Manual Respawn", ManualRespawn::g_manualRespawn.Enabled(), ManualRespawn::ToggleOnOff, ManualRespawn::ToggleOnOff);
 		AddTexter("Auto-kill Enemies", autoKillEnemies, std::vector<std::string>{"Off", "Weak", "Radical"}, null, autoKillPlus, autoKillMinus);
-		AddLocal("Meteor Shower Mode", MeteorShower::g_meteorShower.Enabled(), MeteorShower::ToggleOnOff, MeteorShower::ToggleOnOff);
+		AddOption("Disasters (Tornado / Flood / Meteors)", null, nullFunc, SUB::DISASTERS);
 		AddToggle("EMP Mode (For Night-time)", blackoutMode, null, blackoutOff);
 		AddToggle("Simple Blackout Mode (For Night-time)", simpleBlackoutMode, null, blackoutOff);
 		AddToggle("Jump-Around Mode", JumpAroundMode::bEnabled, jumpAroundOn, jumpAroundOff);
@@ -43,160 +43,28 @@ namespace sub
 		AddOption("Radio", null, nullFunc, SUB::RADIOSUB);
 		AddOption("Animal Riding (SP)", null, nullFunc, SUB::ANIMALRIDING);
 		AddOption("Clear Area", null, nullFunc, SUB::CLEARAREA);
-		AddOption("Vision Hax", null, nullFunc, SUB::TIMECYCLES);
-		AddOption("Map Mods (Old)", null, nullFunc, SUB::MAPMODS);
+		AddOption("Weather FX / Vision", null, nullFunc, SUB::TIMECYCLES);
+		AddOption("Map Mods", null, nullFunc, SUB::MAPMODS);
 		AddOption("HUD Options", null, nullFunc, SUB::HUDOPTIONS);
 		AddOption("Game Camera Options", null, nullFunc, SUB::GAMECAMOPTIONS);
-		AddOption("PC Graphics (Weak/High)", null, nullFunc, SUB::GRAPHICSQUALITY);
+		AddOption("PC Graphics", null, nullFunc, SUB::GRAPHICSQUALITY);
 		AddOption("Space Extras", null, nullFunc, SUB::SPACEEXTRAS);
 		AddOption("Custom Skins & Heroes", null, nullFunc, SUB::CUSTOMSKINS);
 		AddOption("Object Spawner", null, nullFunc, SUB::SPOONER_SPAWN_PROP);
 
-		AddBreak("Not So Fun");
+		AddBreak("---Cameras---");
 
 		bool bDeleteAllCams = false;
-		AddOption("Delete All Cameras", bDeleteAllCams);
+		AddOption("Reset All Script Cameras", bDeleteAllCams);
 		if (bDeleteAllCams)
 		{
+			if (GTA2Cam::g_gta2Cam.Enabled())
+				GTA2Cam::g_gta2Cam.TurnOff();
 			World::SetRenderingCamera(0);
 			World::DestroyAllCameras();
 			World::SetRenderingCamera(0);
-		}
-
-		AddOption("Rectangle Draw Tool (Mouse) (ALPHA) [DEV]", null, DrawToolsMenu, -1, true);
-
-		bool bEnableCellphoneYsc = false;
-		AddTickol("In-Game Mobile Phone", GET_NUMBER_OF_THREADS_RUNNING_THE_SCRIPT_WITH_THIS_HASH(0xF292D030) > 0, bEnableCellphoneYsc, bEnableCellphoneYsc, TICKOL::BOXTICK, TICKOL::BOXBLANK); if (bEnableCellphoneYsc)
-		{
-			if (GET_NUMBER_OF_THREADS_RUNNING_THE_SCRIPT_WITH_THIS_HASH(0xF292D030) > 0) // cellphone_controller
-			{
-				TERMINATE_ALL_SCRIPTS_WITH_THIS_NAME("cellphone_controller");
-			}
-			else
-			{
-				Game::RequestScript("cellphone_controller", 1424);
-			}
-		}
-
-		enum eYscScriptTexterIndex { YSCSCRIPTTEXTER_LOAD, YSCSCRIPTTEXTER_UNLOAD };
-		static UINT8 yscScriptTexterIndex = YSCSCRIPTTEXTER_LOAD;
-		std::vector<std::string> vYscScriptTexter{ "Load", "Unload" };
-		bool yscScriptInput = false; 
-		bool yscScriptPlus = false; 
-		bool yscScriptMinus = false;
-
-		AddTexter("YSC Script [DEV]", yscScriptTexterIndex, vYscScriptTexter, yscScriptInput, yscScriptPlus, yscScriptMinus);
-
-		if (yscScriptPlus) 
-		{ 
-			if (yscScriptTexterIndex < vYscScriptTexter.size() - 1)
-			{
-				yscScriptTexterIndex++;
-			} 
-		}
-
-		if (yscScriptMinus) 
-		{ 
-			if (yscScriptTexterIndex > 0) 
-			{
-				yscScriptTexterIndex--;
-			}
-		}
-
-		if (yscScriptInput)
-		{
-			std::string inputStr = std::string(Game::InputBox("", 65U, "Enter script name:"));
-			if (inputStr.length() > 0)
-			{
-				static const std::map<std::string, UINT16> vYscStackSizes
-				{
-					{ "achievement_controller", 1424 },
-					{ "ambient_sonar", 1424 },
-					{ "ambient_tonya", 1424 },
-					{ "ambient_tonyacall2", 1424 },
-					{ "ambient_tonyacall5", 1424 },
-					{ "am_mp_property_int", 11048 },
-					{ "am_mp_yacht", 5000 },
-					{ "am_pi_menu", 9800 },
-					{ "appchecklist", 2552 },
-					{ "appchecklist", 3800 },
-					{ "appcontacts", 3800 },
-					{ "appinternet", 3800 },
-					{ "appmpjoblistnew", 2552 },
-					{ "appmpjoblistnew", 3800 },
-					{ "blip_controller", 1424 },
-					{ "bootycallhandler", 1424 },
-					{ "buddydeathresponse", 1424 },
-					{ "building_controller", 1424 },
-					{ "candidate_controller", 1424 },
-					{ "carwash2", 1424 },
-					{ "celebrations", 3650 },
-					{ "cellphone_controller", 1424 },
-					{ "cellphone_flashhand", 1424 },
-					{ "cheat_controller", 1424 },
-					{ "completionpercentage_controller", 1424 },
-					{ "context_controller", 1424 },
-					{ "controller_ambientarea", 1424 },
-					{ "controller_races", 1424 },
-					{ "controller_towing", 1424 },
-					{ "country_race", 3650 },
-					{ "dialogue_handler", 1424 },
-					{ "drunk_controller", 1424 },
-					{ "email_controller", 1424 },
-					{ "emergencycall", 512 },
-					{ "emergencycalllauncher", 1424 },
-					{ "event_controller", 1424 },
-					{ "fake_interiors", 1424 },
-					{ "flow_controller", 1424 },
-					{ "fmmc_launcher", 14000 },
-					{ "fm_capture_creator", 18000 },
-					{ "fm_deathmatch_creator", 18000 },
-					{ "fm_lts_creator", 18000 },
-					{ "fm_maintain_cloud_header_data", 1424 },
-					{ "fm_main_menu", 3650 },
-					{ "fm_mission_controller", 31000 },
-					{ "fm_mission_creator", 18000 },
-					{ "fm_race_creator", 18000 },
-					{ "freemode", 21512 },
-					{ "freemode_init", 3650 },
-					{ "ingamehud", 3650 },
-					{ "maintransition", 8032 },
-					{ "maude_postbailbond", 1424 },
-					{ "mission_stat_alerter", 1424 },
-					{ "mission_stat_watcher", 1828 },
-					{ "mpstatsinit", 1424 },
-					{ "mrsphilips2", 18000 },
-					{ "net_cloud_mission_loader", 2050 },
-					{ "net_rank_tunable_loader", 1424 },
-					{ "net_tunable_check", 1424 },
-					{ "pickup_controller", 1424 },
-					{ "player_controller", 1424 },
-					{ "postrc_barry1and2", 1424 },
-					{ "randomchar_controller", 1424 },
-					{ "restrictedareas", 1424 },
-					{ "selector", 1424 },
-					{ "shop_controller", 1424 },
-					{ "social_controller", 1828 },
-					{ "stats_controller", 1424 },
-					{ "stock_controller", 1424 },
-					{ "taxilauncher", 1424 },
-					{ "taxiservice", 1828 },
-					{ "tennis_family", 3650 },
-					{ "traffick_air", 18000 },
-					{ "ugc_global_registration", 128 },
-					{ "vehicle_gen_controller", 1828 }
-				};
-				boost::to_lower(inputStr);
-				switch (yscScriptTexterIndex)
-				{
-				case eYscScriptTexterIndex::YSCSCRIPTTEXTER_LOAD:
-					Game::RequestScript(inputStr.c_str(), vYscStackSizes.count(inputStr) ? vYscStackSizes.at(inputStr) : 14000);
-					break;
-				case eYscScriptTexterIndex::YSCSCRIPTTEXTER_UNLOAD:
-					TERMINATE_ALL_SCRIPTS_WITH_THIS_NAME(inputStr.c_str());
-					break;
-				}
-			}
+			Camera::RenderScriptCams(false);
+			Game::Print::PrintBottomLeft("~g~Script cameras reset.");
 		}
 
 		if (miscFreecamOn)
@@ -295,12 +163,12 @@ namespace sub
 		bool strengthPlus = false;
 		bool strengthMinus = false;
 
-		AddTitle("Vision Hax");
+		AddTitle("Weather FX / Vision");
 		AddLocal("Heat Vision", GET_USINGSEETHROUGH(), heatVisionOn, heatVisionOn);
 		AddToggle("Heat Vision On Aim", hvSnipers);
 		AddToggle("Night Vision (SP)", bitNightVision, nightVisionOn, nightVisionOff);
 
-		AddBreak("---Timecycle Hax---");
+		AddBreak("---Timecycle FX---");
 		AddNumber("Timecycle Strength", currentTimecycleStrength, 2, null, strengthPlus, strengthMinus);
 		AddOption("Reset", timecyclesReset);
 
@@ -920,8 +788,24 @@ namespace sub
 
 		void GameCamOptionsMenu()
 		{
-			AddTitle("Game Camera");
+			AddTitle("Cameras");
 
+			AddOption("Film Cameras", null, nullFunc, SUB::SPACE_FILMCAM);
+			AddOption("FreeCam (Functions)", null, nullFunc, SUB::FUNCTIONS_HUB);
+			AddLocal("Top-Down View", GTA2Cam::g_gta2Cam.Enabled(), GTA2Cam::ToggleOnOff, GTA2Cam::ToggleOnOff);
+
+			bool resetCams = false;
+			AddOption("Reset Script Cameras", resetCams);
+			if (resetCams)
+			{
+				if (GTA2Cam::g_gta2Cam.Enabled())
+					GTA2Cam::g_gta2Cam.TurnOff();
+				World::DestroyAllCameras();
+				Camera::RenderScriptCams(false);
+				Game::Print::PrintBottomLeft("~g~Script cameras reset.");
+			}
+
+			AddBreak("---Gameplay Shake---");
 			auto& shakeNames = cameraShakeNames;
 
 			bool shakeTypePlus = false;

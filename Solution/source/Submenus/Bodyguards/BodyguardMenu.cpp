@@ -337,28 +337,46 @@ namespace sub
             {
                 Vehicle veh = GET_VEHICLE_PED_IS_IN(playerPed, false);
                 GTAvehicle gtaVeh(veh);
+                gtaVeh.RequestControl();
                 int seated = 0;
+                const int maxSeat = GET_VEHICLE_MAX_NUMBER_OF_PASSENGERS(veh);
                 for (auto& bg : sub::BodyguardMenu::BodyguardDb)
                 {
                     if (!bg.Handle.Exists()) continue;
-                    bool found = false;
-                    for (int s = 0; s <= 15; ++s)
+                    Ped ped = bg.Handle.GetHandle();
+                    if (IS_PED_IN_VEHICLE(ped, veh, false))
                     {
-                        if (gtaVeh.IsSeatFree((VehicleSeat)s))
+                        ++seated;
+                        continue;
+                    }
+                    bool found = false;
+                    for (int s = 0; s <= maxSeat; ++s)
+                    {
+                        if (IS_VEHICLE_SEAT_FREE(veh, s, true))
                         {
-                            SET_PED_INTO_VEHICLE(bg.Handle.GetHandle(), veh, s);
+                            CLEAR_PED_TASKS(ped);
+                            bg.Handle.RequestControl();
+                            // Prefer natural entry; warp if too far
+                            Vector3 pp = GET_ENTITY_COORDS(playerPed, true);
+                            Vector3 bp = GET_ENTITY_COORDS(ped, true);
+                            const float dx = pp.x - bp.x, dy = pp.y - bp.y, dz = pp.z - bp.z;
+                            const float dist2 = dx * dx + dy * dy + dz * dz;
+                            if (dist2 > 35.0f * 35.0f)
+                                SET_PED_INTO_VEHICLE(ped, veh, s);
+                            else
+                                TASK_ENTER_VEHICLE(ped, veh, 8000, s, 2.0f, 1, 0);
                             found = true;
-                            seated++;
+                            ++seated;
                             break;
                         }
                     }
                     if (!found) break;
                 }
-                Game::Print::PrintBottomLeft(oss_ << "Seated " << seated << " bodyguard(s).");
+                Game::Print::PrintBottomLeft(oss_ << "Bodyguards entering (" << seated << ").");
             }
             else
             {
-                Game::Print::PrintBottomLeft("~r~You are not in a vehicle.");
+                Game::Print::PrintBottomLeft("~r~Sit in a vehicle first.");
             }
         }
 

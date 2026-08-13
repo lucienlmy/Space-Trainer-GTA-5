@@ -1,0 +1,67 @@
+Space Trainer 3.5.3 — GitHub Release Notes
+==========================================
+Paste the block below into the GitHub release description.
+
+--------------------------------------------------------------------------
+
+Space Trainer — single-player trainer for Grand Theft Auto V.
+
+## Space Trainer 3.5.3
+
+### What's new
+- **SPACE TRAINER** branding with smoother UI animations (open fade, selection slide, accent pulse)
+- **Zombie Apocalypse** — realistic chaos outbreak: random pedestrians and drivers get infected, corpses rise after a delay, armed survivors can fight back, cops can turn too
+- **Professions** — Firefighter (fireman model + fire truck + fire calls) and Inkassator / cash collector (armored guard models + Stockade, defend delivery or van heist)
+- **Disasters** — Tornado, Flood, Meteor Shower
+- **FreeCam fix** — character stays visible while the camera flies freely
+- Better bodyguard vehicle entry and follow
+- Film camera and Top-Down camera fixes
+- Tools Pack: smart vehicle cleanup, film cams, gangs, realistic traffic (Quick Search console removed)
+- Compact menu hubs and safer UTF-8 Russian text
+- Default language: English (Russian supported)
+
+### From 3.5.2
+- Contract Hits (5 mission types) with stealth until aimed/shot
+- Rebindable open menu key in Settings
+- Safer blackout and safer vehicle spawn
+- PedList.xml and SpaceStuff data included
+
+---
+
+**Open / close:** F5 (rebindable)  
+**Version:** 3.5.3  
+**Author:** xdigr ([t.me/xdigr](https://t.me/xdigr))
+
+### Features
+- Player options
+- Bodyguards
+- Weapons
+- Vehicles
+- Spawner
+- Teleport
+- World / Weather / Time
+- NPC tools
+- Animations
+- Extra functions (chaos, disasters, zombies, professions, contracts)
+- Appearance and settings
+- Russian language support
+
+### Install
+1. Install ScriptHookV + ASI Loader  
+2. Disable BattlEye in Rockstar Launcher  
+3. Copy `Space.asi` and the `SpaceStuff` folder into your GTA V directory (same folder as `GTA5.exe`)  
+4. Launch Story Mode and press F5  
+
+### Requirements
+- GTA V (PC)
+- ScriptHookV
+- ASI Loader
+- Story Mode / Single Player only
+
+**DO NOT USE IN GTA ONLINE.**
+
+License: GPL-3.0  
+GitHub: https://github.com/networkgpts/Space-Trainer-GTA-5  
+Release: https://github.com/networkgpts/Space-Trainer-GTA-5/releases/tag/v3.5.3  
+
+Original project: MenyooSP by MAFINS / itsjustcurtis — https://github.com/itsjustcurtis/MenyooSP
