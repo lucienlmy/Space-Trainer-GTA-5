@@ -1,4 +1,5 @@
-<img width="1274" height="996" alt="gta5r" src="https://github.com/user-attachments/assets/9e1d0aab-1903-49ba-9c7a-68ab3d55f1d6" />
+<img width="1920" height="1080" alt="37e3d82c-3fdb-41c6-b7e9-5b27ff19aaa3 (1)" src="https://github.com/user-attachments/assets/f42876af-da52-485b-9e09-f88bd6ffb6d3" />
+
 
 # Space Trainer
 
